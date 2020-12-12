@@ -31,3 +31,9 @@ jobs:
           yarn lint
           yarn tsc
           yarn test
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: release/YoutubePlayer*
