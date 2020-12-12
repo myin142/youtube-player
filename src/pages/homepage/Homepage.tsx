@@ -1,5 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { remote } from 'electron';
+import { FaDownload } from 'react-icons/fa';
 import LocalYoutubeDlService from '../../services/local-youtube-dl.service';
 import {
   VideoFormat,
@@ -112,10 +113,10 @@ export class HomePage extends React.Component<HomePageProps, HomePageState> {
     const resultList = searchResult.map((r) => {
       return (
         <li key={r.id}>
-          <i
+          <FaDownload
             role="button"
             tabIndex={0}
-            className="fas fa-download"
+            className="pointer"
             onClick={() => this.download(r.id)}
             onKeyPress={() => this.download(r.id)}
             aria-label="Download"
