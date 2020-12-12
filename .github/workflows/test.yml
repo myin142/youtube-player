@@ -38,4 +38,4 @@ jobs:
           EXTENSION: "${{matrix.os == 'macos-latest' && 'dmg' || (matrix.os == 'windows-latest' && 'exe' || 'AppImage')}}"
         with:
           name: build
-          path: release/YoutubePlayer*.$EXTENSION
+          path: release/YoutubePlayer*.${{env.EXTENSION}}
