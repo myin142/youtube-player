@@ -9,6 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
+        ext: [dmg, exe, AppImage]
 
     steps:
       - name: Check out Git repository
@@ -36,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build
-          path: release/YoutubePlayer*
+          path: release/YoutubePlayer*.${{matrix.ext}}
