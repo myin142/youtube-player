@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        ext: [dmg, exe, AppImage]
 
     steps:
       - name: Check out Git repository
@@ -35,6 +34,8 @@ jobs:
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
+        env:
+          EXTENSION: "${{matrix.os == 'macos-latest' && 'dmg' || (matrix.os == 'windows-latest' && 'exe' || 'AppImage')}}"
         with:
           name: build
-          path: release/YoutubePlayer*.${{matrix.ext}}
+          path: release/YoutubePlayer*.${{EXTENSION}}
