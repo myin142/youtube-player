@@ -3,6 +3,7 @@ import { remote } from 'electron';
 import { FaDownload } from 'react-icons/fa';
 import LocalYoutubeDlService from '../../services/local-youtube-dl.service';
 import {
+  Status,
   VideoFormat,
   VideoInfo,
   YoutubeService,
@@ -19,12 +20,6 @@ export interface HomePageState {
   thumbnails: { [id: string]: string };
 }
 
-enum Status {
-  NONE,
-  SEARCHING,
-  DOWNLOADING,
-}
-
 export class HomePage extends React.Component<HomePageProps, HomePageState> {
   private youtubeService: YoutubeService;
 
@@ -35,7 +30,7 @@ export class HomePage extends React.Component<HomePageProps, HomePageState> {
       search: 'PLhVmt2W2Ji9Ic_xK-b0uKMadGeXN-Tg18',
       searchResult: [],
       status: Status.NONE,
-      downloadLocation: './',
+      downloadLocation: '.',
       thumbnails: {},
     };
   }
@@ -58,7 +53,7 @@ export class HomePage extends React.Component<HomePageProps, HomePageState> {
     });
 
     infos.forEach(async (info) => {
-      const url = await this.youtubeService.getThumbnail(info.id);
+      const url = this.youtubeService.getThumbnail(info.id);
       this.setState((prev) => {
         prev.thumbnails[info.id] = url;
         return prev;
@@ -92,11 +87,12 @@ export class HomePage extends React.Component<HomePageProps, HomePageState> {
     }
 
     this.setState({ status: Status.DOWNLOADING });
-    await this.youtubeService.downloadVideo({
+    const names = await this.youtubeService.downloadVideo({
       id,
       format: VideoFormat.AUDIO,
       location: downloadLocation,
     });
+    console.log(names);
 
     this.setState({ status: Status.NONE });
   }

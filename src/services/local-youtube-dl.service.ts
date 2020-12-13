@@ -8,6 +8,11 @@ import {
 export default class LocalYoutubeDlService implements YoutubeService {
   private cmd: ChildProcessWithoutNullStreams | null = null;
 
+  // TODO: save in cache folder
+  private thumbnailCache: { [id: string]: string } = {};
+
+  private thumbnailCmd: { [id: string]: ChildProcessWithoutNullStreams } = {};
+
   async getPlaylistVideoInfos(playlist: string): Promise<VideoInfo[]> {
     let outputs: string[] = [];
     try {
@@ -49,14 +54,37 @@ export default class LocalYoutubeDlService implements YoutubeService {
     };
   }
 
-  public async getThumbnail(id: string): Promise<string> {
-    const url = await this.executeYoutubeDL(['--get-thumbnail', '--', id]);
-    return url.length > 0 ? url[0] : '';
+  public getThumbnail(id: string): string {
+    if (this.thumbnailCache[id]) {
+      return this.thumbnailCache[id];
+    }
+
+    if (this.thumbnailCmd[id]) {
+      return '';
+    }
+
+    this.executeYoutubeDL(['--get-thumbnail', '--', id], (cmd) => {
+      this.thumbnailCmd[id] = cmd;
+    })
+      .then((urls) => {
+        const thumbnail = urls.length > 0 ? urls[0] : '';
+        if (thumbnail) {
+          this.thumbnailCache[id] = thumbnail;
+        }
+        return thumbnail;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return '';
   }
 
-  async downloadVideo({ id, location }: VideoDownloadOptions): Promise<void> {
+  async downloadVideo({
+    id,
+    location,
+  }: VideoDownloadOptions): Promise<string[]> {
     try {
-      await this.executeYoutubeDL([
+      const outputs = await this.executeYoutubeDL([
         '--output',
         `${location}/%(title)s.%(ext)s`,
         '--format',
@@ -64,9 +92,30 @@ export default class LocalYoutubeDlService implements YoutubeService {
         '--',
         id,
       ]);
+
+      const lines = outputs.join('\n').split('\n');
+      return lines
+        .map((line) => {
+          if (line.includes('Destination: ')) {
+            return line.substr(line.indexOf(location)).trim();
+          }
+
+          if (line.includes('has already been downloaded')) {
+            return line.substr(line.indexOf(location)).split('has')[0].trim();
+          }
+          return null;
+        })
+        .filter((x) => x)
+        .map((fullPath) => {
+          if (fullPath == null) return null;
+          const parts = fullPath.split('/');
+          return parts[parts.length - 1];
+        }) as string[];
     } catch (err) {
       console.log('Download failed');
     }
+
+    return [];
   }
 
   stopAction(): boolean {
@@ -77,9 +126,14 @@ export default class LocalYoutubeDlService implements YoutubeService {
     return false;
   }
 
-  private async executeYoutubeDL(args: string[]): Promise<string[]> {
+  private async executeYoutubeDL(
+    args: string[],
+    saveCmd = (cmd: ChildProcessWithoutNullStreams) => {
+      this.cmd = cmd;
+    }
+  ): Promise<string[]> {
     const cmd = spawn('youtube-dl', args);
-    this.cmd = cmd;
+    saveCmd(cmd);
 
     return new Promise((resolve, reject) => {
       const outputs: string[] = [];

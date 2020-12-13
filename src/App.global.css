@@ -1,3 +1,13 @@
 .pointer {
   cursor: pointer;
 }
+
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-vertical {
+  display: flex;
+  flex-direction: column;
+}
