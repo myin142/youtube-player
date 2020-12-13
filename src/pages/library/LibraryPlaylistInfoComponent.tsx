@@ -12,73 +12,48 @@ import {
 interface LibraryPlaylistInfoProps {
   folderInfo: LibraryFolderInfo;
   youtubeService: YoutubeService;
+  videoInfos: VideoInfo[];
   onDownloaded: (ids: VideoDownloadResult[]) => void;
 }
 
-interface LibraryPlaylistInfoState {
-  videoInfos: VideoInfo[];
-}
-
-export default class LibraryPlaylistInfoComponent extends React.Component<
-  LibraryPlaylistInfoProps,
-  LibraryPlaylistInfoState
-> {
-  constructor(props: LibraryPlaylistInfoProps) {
-    super(props);
-    this.state = {
-      videoInfos: [],
-    };
-  }
-
-  async componentDidMount() {
-    this.loadVideoInfos();
-  }
-
-  private async loadVideoInfos() {
-    const { folderInfo, youtubeService } = this.props;
-    const videoInfos = await youtubeService.getPlaylistVideoInfos(
-      folderInfo.playlistInfo.playlistId
-    );
-    this.setState({ videoInfos });
-  }
-
-  render() {
-    const { videoInfos } = this.state;
-    const { folderInfo, youtubeService, onDownloaded } = this.props;
-
-    const videos = folderInfo.playlistInfo.videos || [];
-    const videoItems = videos.map((v) => {
-      return (
-        <li key={v.id}>
-          <VideoItem name={v.name} thumbnail={v.thumbnail} />
-        </li>
-      );
-    });
-
-    const nonSyncedVideos = videoInfos.filter(
-      (i) => videos.findIndex((v) => v.id === i.id) === -1
-    );
-
+export default function LibraryPlaylistInfoComponent({
+  videoInfos,
+  folderInfo,
+  youtubeService,
+  onDownloaded,
+}: LibraryPlaylistInfoProps) {
+  const videos = folderInfo.playlistInfo.videos || [];
+  const videoItems = videos.map((v) => {
     return (
-      <div>
-        {videos.length > 0 && (
-          <div>
-            <h2>Downloaded Videos</h2>
-            <ul>{videoItems}</ul>
-          </div>
-        )}
-        {nonSyncedVideos.length > 0 && (
-          <div>
-            <h2>Not downloaded videos</h2>
-            <YoutubeVideoList
-              videoInfos={nonSyncedVideos}
-              youtubeService={youtubeService}
-              downloadFolder={folderInfo.fullPath}
-              onDownloaded={onDownloaded}
-            />
-          </div>
-        )}
-      </div>
+      <li key={v.id}>
+        <VideoItem name={v.name} thumbnail={v.thumbnail} />
+      </li>
     );
-  }
+  });
+
+  const nonSyncedVideos = videoInfos.filter(
+    (i) => videos.findIndex((v) => v.id === i.id) === -1
+  );
+
+  return (
+    <div>
+      {videos.length > 0 && (
+        <div>
+          <h2>Downloaded Videos</h2>
+          <ul>{videoItems}</ul>
+        </div>
+      )}
+      {nonSyncedVideos.length > 0 && (
+        <div>
+          <h2>Not downloaded videos</h2>
+          <YoutubeVideoList
+            videoInfos={nonSyncedVideos}
+            youtubeService={youtubeService}
+            downloadFolder={folderInfo.fullPath}
+            onDownloaded={onDownloaded}
+          />
+        </div>
+      )}
+    </div>
+  );
 }

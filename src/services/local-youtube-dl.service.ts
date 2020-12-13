@@ -159,7 +159,7 @@ export default class LocalYoutubeDlService implements YoutubeService {
       this.cmd = cmd;
     }
   ): Promise<string[]> {
-    const cmd = spawn('youtube-dl', args);
+    const cmd = spawn('youtube-dl', ['--skip-unavailable-fragments', ...args]);
     saveCmd(cmd);
 
     return new Promise((resolve, reject) => {

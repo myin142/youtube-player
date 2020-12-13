@@ -3,16 +3,18 @@ import {
   LibraryFolderInfo,
   LibraryPlaylistVideo,
 } from '../../services/library.service';
-import LocalYoutubeDlService from '../../services/local-youtube-dl.service';
 import {
   VideoDownloadResult,
+  VideoInfo,
   YoutubeService,
 } from '../../services/youtube.service';
 import LibraryPlaylistCreate from './LibraryPlaylistCreate';
 import LibraryPlaylistInfoComponent from './LibraryPlaylistInfoComponent';
 
 interface LibraryPlaylistProps {
+  youtubeService: YoutubeService;
   folderInfo: LibraryFolderInfo;
+  videoInfos: VideoInfo[];
   onFolderInfoChange: (info: LibraryFolderInfo) => void;
 }
 
@@ -23,9 +25,6 @@ export default class LibraryPlaylist extends React.Component<
   LibraryPlaylistProps,
   LibraryPlaylistState
 > {
-  // TODO: share
-  private readonly youtubeService: YoutubeService = new LocalYoutubeDlService();
-
   constructor(props: LibraryPlaylistProps) {
     super(props);
     this.state = {};
@@ -45,12 +44,12 @@ export default class LibraryPlaylist extends React.Component<
   }
 
   private downloadedVideos(result: VideoDownloadResult[]): void {
-    const { folderInfo, onFolderInfoChange } = this.props;
+    const { folderInfo, onFolderInfoChange, youtubeService } = this.props;
     const newVideoInfos: LibraryPlaylistVideo[] = result.map((x) => {
       return {
         id: x.id,
         name: x.name,
-        thumbnail: this.youtubeService.getThumbnail(x.id),
+        thumbnail: youtubeService.getThumbnail(x.id),
       };
     });
     const videos = folderInfo.playlistInfo.videos || [];
@@ -68,14 +67,15 @@ export default class LibraryPlaylist extends React.Component<
   }
 
   render() {
-    const { folderInfo } = this.props;
+    const { folderInfo, videoInfos, youtubeService } = this.props;
     return (
       <div>
         <h1>{folderInfo.name}</h1>
         {(folderInfo.playlistInfo && (
           <LibraryPlaylistInfoComponent
+            videoInfos={videoInfos}
             folderInfo={folderInfo}
-            youtubeService={this.youtubeService}
+            youtubeService={youtubeService}
             onDownloaded={(ids) => this.downloadedVideos(ids)}
           />
         )) || (
