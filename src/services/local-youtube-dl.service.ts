@@ -1,4 +1,7 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { remote } from 'electron';
+import * as _ from 'lodash';
+import * as fs from 'fs-extra';
 import {
   VideoDownloadOptions,
   VideoInfo,
@@ -6,12 +9,34 @@ import {
 } from './youtube.service';
 
 export default class LocalYoutubeDlService implements YoutubeService {
+  private THUMBNAIL_CACHE_FILE = 'ytdl-thumbnails.json';
+
   private cmd: ChildProcessWithoutNullStreams | null = null;
 
   // TODO: save in cache folder
   private thumbnailCache: { [id: string]: string } = {};
 
   private thumbnailCmd: { [id: string]: ChildProcessWithoutNullStreams } = {};
+
+  private cacheThumbnail = _.debounce(() => {
+    fs.outputJson(this.thumbnailCachePath, this.thumbnailCache);
+    console.log('Cache saved');
+  }, 5000);
+
+  constructor() {
+    this.loadThumbnailCache();
+  }
+
+  private async loadThumbnailCache() {
+    const exists = await fs.pathExists(this.thumbnailCachePath);
+    if (exists) {
+      this.thumbnailCache = await fs.readJSON(this.thumbnailCachePath);
+    }
+  }
+
+  private get thumbnailCachePath() {
+    return `${remote.app.getPath('cache')}/${this.THUMBNAIL_CACHE_FILE}`;
+  }
 
   async getPlaylistVideoInfos(playlist: string): Promise<VideoInfo[]> {
     let outputs: string[] = [];
@@ -71,6 +96,8 @@ export default class LocalYoutubeDlService implements YoutubeService {
         if (thumbnail) {
           this.thumbnailCache[id] = thumbnail;
         }
+
+        this.cacheThumbnail();
         return thumbnail;
       })
       .catch((err) => {
