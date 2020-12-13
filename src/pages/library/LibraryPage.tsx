@@ -27,6 +27,7 @@ export class LibraryPage extends React.Component<
 > {
   private static createLibraryService(props: LibraryPageProps) {
     const { path } = props.match.params as { path: string };
+    console.log(path);
     return new LibraryService(decodeURIComponent(path));
   }
 

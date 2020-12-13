@@ -10,9 +10,9 @@ import {
 } from '../../services/youtube.service';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface HomePageProps {}
+export interface SearchPageProps {}
 
-export interface HomePageState {
+export interface SearchPageState {
   search: string;
   searchResult: VideoInfo[];
   status: Status;
@@ -20,10 +20,13 @@ export interface HomePageState {
   thumbnails: { [id: string]: string };
 }
 
-export class HomePage extends React.Component<HomePageProps, HomePageState> {
+export class SearchPage extends React.Component<
+  SearchPageProps,
+  SearchPageState
+> {
   private youtubeService: YoutubeService;
 
-  constructor(props: HomePageProps) {
+  constructor(props: SearchPageProps) {
     super(props);
     this.youtubeService = new LocalYoutubeDlService();
     this.state = {

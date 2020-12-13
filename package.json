@@ -86,7 +86,7 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "youtube-player",
+      "owner": "myin142",
       "repo": "youtube-player"
     }
   },

@@ -208,7 +208,7 @@ export default class MenuBuilder {
         accelerator: 'F3',
         click: () => {
           // TODO: share url paths
-          this.mainWindow.webContents.send(AppEvent.REDIRECT, '/');
+          this.mainWindow.webContents.send(AppEvent.REDIRECT, '/search');
         },
       },
       {

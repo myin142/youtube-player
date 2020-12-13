@@ -6,7 +6,7 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom';
-import { HomePage } from './pages/homepage/Homepage';
+import { SearchPage } from './pages/search/SearchPage';
 import { LibraryPage } from './pages/library/LibraryPage';
 import { AppEvent } from './services/event.service';
 
@@ -37,7 +37,11 @@ export default class App extends React.Component<unknown, AppState> {
         {redirect && <Redirect to={redirect} />}
         <Switch>
           <Route path="/library/:path" component={LibraryPage} />
-          <Route path="/" component={HomePage} />
+          <Route path="/search" component={SearchPage} />
+
+          <Route path="/">
+            <Redirect to="/library/." />
+          </Route>
         </Switch>
       </Router>
     );
