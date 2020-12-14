@@ -3,6 +3,7 @@ import React from 'react';
 import VideoItem from '../../components/VideoItem';
 import YoutubeVideoList from '../../components/YoutubeVideoList';
 import { LibraryFolderInfo } from '../../services/library.service';
+import { MusicPlayer } from '../../services/music-player/music-player.service';
 import {
   VideoDownloadResult,
   VideoInfo,
@@ -13,6 +14,7 @@ interface LibraryPlaylistInfoProps {
   folderInfo: LibraryFolderInfo;
   youtubeService: YoutubeService;
   videoInfos: VideoInfo[];
+  musicPlayer: MusicPlayer;
   onDownloaded: (ids: VideoDownloadResult[]) => void;
 }
 
@@ -21,12 +23,18 @@ export default function LibraryPlaylistInfoComponent({
   folderInfo,
   youtubeService,
   onDownloaded,
+  musicPlayer,
 }: LibraryPlaylistInfoProps) {
   const videos = folderInfo.playlistInfo.videos || [];
   const videoItems = videos.map((v) => {
     return (
       <li key={v.id}>
-        <VideoItem name={v.name} thumbnail={v.thumbnail} />
+        <button
+          type="button"
+          onClick={() => musicPlayer.play(`${folderInfo.fullPath}/${v.name}`)}
+        >
+          <VideoItem name={v.name} thumbnail={v.thumbnail} />
+        </button>
       </li>
     );
   });

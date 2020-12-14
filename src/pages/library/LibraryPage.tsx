@@ -5,6 +5,8 @@ import {
   LibraryService,
 } from '../../services/library.service';
 import LocalYoutubeDlService from '../../services/local-youtube-dl.service';
+import AudioController from '../../services/music-player/audio-controller';
+import { MusicPlayer } from '../../services/music-player/music-player.service';
 import { VideoInfo, YoutubeService } from '../../services/youtube.service';
 import LibraryBrowser from './LibraryBrowser';
 import LibraryPlaylist from './LibraryPlaylist';
@@ -27,7 +29,6 @@ export class LibraryPage extends React.Component<
 > {
   private static createLibraryService(props: LibraryPageProps) {
     const { path } = props.match.params as { path: string };
-    console.log(path);
     return new LibraryService(decodeURIComponent(path));
   }
 
@@ -35,6 +36,8 @@ export class LibraryPage extends React.Component<
   private readonly libraryService: LibraryService;
 
   private readonly youtubeService: YoutubeService = new LocalYoutubeDlService();
+
+  private readonly musicPlayer: MusicPlayer = new AudioController(100);
 
   constructor(props: LibraryPageProps) {
     super(props);
@@ -91,6 +94,7 @@ export class LibraryPage extends React.Component<
         />
         {selectedFolder && (
           <LibraryPlaylist
+            musicPlayer={this.musicPlayer}
             videoInfos={videoInfos}
             youtubeService={this.youtubeService}
             folderInfo={selectedFolder}

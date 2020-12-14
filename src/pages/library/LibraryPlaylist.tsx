@@ -3,6 +3,8 @@ import {
   LibraryFolderInfo,
   LibraryPlaylistVideo,
 } from '../../services/library.service';
+import AudioController from '../../services/music-player/audio-controller';
+import { MusicPlayer } from '../../services/music-player/music-player.service';
 import {
   VideoDownloadResult,
   VideoInfo,
@@ -12,6 +14,7 @@ import LibraryPlaylistCreate from './LibraryPlaylistCreate';
 import LibraryPlaylistInfoComponent from './LibraryPlaylistInfoComponent';
 
 interface LibraryPlaylistProps {
+  musicPlayer: MusicPlayer;
   youtubeService: YoutubeService;
   folderInfo: LibraryFolderInfo;
   videoInfos: VideoInfo[];
@@ -19,15 +22,30 @@ interface LibraryPlaylistProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface LibraryPlaylistState {}
+interface LibraryPlaylistState {
+  isPlaying: boolean;
+}
 
 export default class LibraryPlaylist extends React.Component<
   LibraryPlaylistProps,
   LibraryPlaylistState
 > {
+  private previousPlay: (() => void) | null = null;
+
   constructor(props: LibraryPlaylistProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      isPlaying: false,
+    };
+  }
+
+  componentWillUnmount() {
+    if (this.previousPlay) {
+      const { musicPlayer } = this.props;
+      // TODO: make generic
+      const ctrl = musicPlayer as AudioController;
+      // ctrl.off('songFinished', this.previousPlay);
+    }
   }
 
   private createPlaylist(id: string): void {
@@ -66,13 +84,56 @@ export default class LibraryPlaylist extends React.Component<
     onFolderInfoChange(updatedInfo);
   }
 
+  private playPlaylist() {
+    const { folderInfo, musicPlayer } = this.props;
+    const { isPlaying } = this.state;
+    const { videos } = folderInfo.playlistInfo;
+
+    // TODO: make generic
+    const ctrl = musicPlayer as AudioController;
+
+    if (this.previousPlay) {
+      // ctrl.off('songFinished', this.previousPlay);
+    }
+
+    let previousIdx = -1;
+    const randomVideoIdx = () => Math.floor(Math.random() * videos.length);
+    const playRandom = () => {
+      let idx = previousIdx;
+      while (idx === previousIdx) {
+        idx = randomVideoIdx();
+      }
+
+      previousIdx = idx;
+      console.log(idx);
+
+      musicPlayer.play(`${folderInfo.fullPath}/${videos[idx].name}`);
+    };
+    const playRandomThis = playRandom.bind(this);
+    this.previousPlay = playRandomThis;
+
+    ctrl.on('songFinished', playRandomThis);
+
+    playRandom();
+  }
+
   render() {
-    const { folderInfo, videoInfos, youtubeService } = this.props;
+    const { folderInfo, videoInfos, youtubeService, musicPlayer } = this.props;
     return (
       <div>
         <h1>{folderInfo.name}</h1>
+        <button type="button" onClick={() => this.playPlaylist()}>
+          Play Playlist
+        </button>
+        <button type="button" onClick={() => musicPlayer.pause()}>
+          Pause
+        </button>
+        <button type="button" onClick={() => musicPlayer.resume()}>
+          Resume
+        </button>
         {(folderInfo.playlistInfo && (
           <LibraryPlaylistInfoComponent
+            musicPlayer={musicPlayer}
             videoInfos={videoInfos}
             folderInfo={folderInfo}
             youtubeService={youtubeService}
