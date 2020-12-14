@@ -30,22 +30,11 @@ export default class LibraryPlaylist extends React.Component<
   LibraryPlaylistProps,
   LibraryPlaylistState
 > {
-  private previousPlay: (() => void) | null = null;
-
   constructor(props: LibraryPlaylistProps) {
     super(props);
     this.state = {
       isPlaying: false,
     };
-  }
-
-  componentWillUnmount() {
-    if (this.previousPlay) {
-      const { musicPlayer } = this.props;
-      // TODO: make generic
-      const ctrl = musicPlayer as AudioController;
-      // ctrl.off('songFinished', this.previousPlay);
-    }
   }
 
   private createPlaylist(id: string): void {
@@ -92,10 +81,6 @@ export default class LibraryPlaylist extends React.Component<
     // TODO: make generic
     const ctrl = musicPlayer as AudioController;
 
-    if (this.previousPlay) {
-      // ctrl.off('songFinished', this.previousPlay);
-    }
-
     let previousIdx = -1;
     const randomVideoIdx = () => Math.floor(Math.random() * videos.length);
     const playRandom = () => {
@@ -110,9 +95,9 @@ export default class LibraryPlaylist extends React.Component<
       musicPlayer.play(`${folderInfo.fullPath}/${videos[idx].name}`);
     };
     const playRandomThis = playRandom.bind(this);
-    this.previousPlay = playRandomThis;
 
-    ctrl.on('songFinished', playRandomThis);
+    ctrl.removeAllListeners('songFinished');
+    ctrl.addListener('songFinished', playRandomThis);
 
     playRandom();
   }
