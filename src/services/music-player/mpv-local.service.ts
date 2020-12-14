@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import { MusicPlayer } from './music-player.service';
 
-export default class MPVLocalService implements MusicPlayer {
+export default class MPVLocalService {
   // eslint-disable-next-line class-methods-use-this
   async play(file: string): Promise<void> {
     const data = await fs.readFile(file);
