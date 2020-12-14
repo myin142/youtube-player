@@ -28,9 +28,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn package
-          yarn lint
-          yarn tsc
-          yarn test
+          #yarn lint
+          #yarn tsc
+          #yarn test
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
