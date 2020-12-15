@@ -12,15 +12,17 @@ import LibraryBrowser from './LibraryBrowser';
 import LibraryPlaylist from './LibraryPlaylist';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface LibraryPageProps extends RouteComponentProps {
-  libraryService: LibraryService;
-}
+export interface LibraryPageProps extends RouteComponentProps {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface LibraryPageState {
   folderInfos: LibraryFolderInfo[];
   selectedFolder: LibraryFolderInfo | null;
   videoInfos: VideoInfo[];
+  libraryService: LibraryService;
+}
+
+interface PathParam {
+  path: string;
 }
 
 export class LibraryPage extends React.Component<
@@ -31,9 +33,6 @@ export class LibraryPage extends React.Component<
     const { path } = props.match.params as { path: string };
     return new LibraryService(decodeURIComponent(path));
   }
-
-  // TODO: share services
-  private readonly libraryService: LibraryService;
 
   private readonly youtubeService: YoutubeService = new LocalYoutubeDlService();
 
@@ -46,13 +45,32 @@ export class LibraryPage extends React.Component<
       folderInfos: [],
       videoInfos: [],
       selectedFolder: null,
+      libraryService: LibraryPage.createLibraryService(props),
     };
-    this.libraryService =
-      props.libraryService || LibraryPage.createLibraryService(props);
   }
 
-  async componentDidMount() {
+  static getDerivedStateFromProps(
+    nextProps: LibraryPageProps,
+    prevState: LibraryPageState
+  ): LibraryPageState {
+    return {
+      ...prevState,
+      libraryService: LibraryPage.createLibraryService(nextProps),
+    };
+  }
+
+  componentDidMount() {
     this.loadFolderInfos();
+  }
+
+  componentDidUpdate(prevProps: LibraryPageProps) {
+    const { match } = this.props;
+    const prevParam = prevProps.match.params as PathParam;
+    const param = match.params as PathParam;
+
+    if (prevParam.path !== param.path) {
+      this.loadFolderInfos();
+    }
   }
 
   private setSelectedFolder(folder: LibraryFolderInfo): void {
@@ -71,7 +89,8 @@ export class LibraryPage extends React.Component<
   }
 
   private async loadFolderInfos(updated: LibraryFolderInfo | null = null) {
-    const folderInfos = await this.libraryService.getLibraryFolderInfos();
+    const { libraryService } = this.state;
+    const folderInfos = await libraryService.getLibraryFolderInfos();
     this.setState({
       folderInfos,
       selectedFolder: updated,
@@ -79,8 +98,9 @@ export class LibraryPage extends React.Component<
   }
 
   private async updateFolderInfo(info: LibraryFolderInfo) {
-    await this.libraryService.updateLibraryPlaylist(info);
-    this.loadFolderInfos(info);
+    const { libraryService } = this.state;
+    await libraryService.updateLibraryPlaylist(info);
+    await this.loadFolderInfos();
   }
 
   render() {
