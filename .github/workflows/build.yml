@@ -1,9 +1,9 @@
-name: Test
+name: Build
 
 on: [push, pull_request]
 
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -23,7 +23,7 @@ jobs:
         run: |
           yarn install --frozen-lockfile --network-timeout 300000
 
-      - name: yarn test
+      - name: yarn build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -37,5 +37,5 @@ jobs:
         env:
           EXTENSION: "${{matrix.os == 'macos-latest' && 'dmg' || (matrix.os == 'windows-latest' && 'exe' || 'AppImage')}}"
         with:
-          name: build-${{matrix.os}}
+          name: ${{matrix.os}}
           path: release/YoutubePlayer*.${{env.EXTENSION}}
