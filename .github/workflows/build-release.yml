@@ -2,6 +2,7 @@ on:
   pull_request:
   push:
     branches: master
+    tags: 'v*'
 
 name: Build and Release
 
