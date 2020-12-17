@@ -38,14 +38,6 @@ jobs:
           #yarn tsc
           #yarn test
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        env:
-          EXTENSION: "${{matrix.os == 'macos-latest' && 'dmg' || (matrix.os == 'windows-latest' && 'exe' || 'AppImage')}}"
-        with:
-          name: ${{matrix.os}}
-          path: release/YoutubePlayer*.${{env.EXTENSION}}
-
   release:
     needs: build
     name: Release
@@ -60,7 +52,7 @@ jobs:
         env:
           REPO: ${{ github.repository }}
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@latest
         with:
           name: Release ${{ github.ref }}
           body: ${{ steps.Changelog.outputs.changelog }}
@@ -68,6 +60,6 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           files: |
-            *
+            release/YoutubePlayer*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
