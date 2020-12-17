@@ -4,13 +4,13 @@ on:
     types:
       - completed
 
-name: Create Release
+name: Release
 
 jobs:
   release:
-    name: Create Release
+    name: Release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.ref, 'refs/tags/v') }}
+    # if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -19,22 +19,14 @@ jobs:
         id: Changelog
         env:
           REPO: ${{ github.repository }}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            ${{ steps.Changelog.outputs.changelog }}
-          draft: true
-          prerelease: false
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          name: Release ${{ github.ref }}
           body: ${{ steps.Changelog.outputs.changelog }}
+          draft: true
+          prerelease: false
+          fail_on_unmatched_files: true
           files: |
             *-latest
         env:
