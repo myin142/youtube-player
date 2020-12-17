@@ -68,6 +68,6 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           files: |
-            *-latest
+            *
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
