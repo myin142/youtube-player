@@ -6,7 +6,9 @@ export interface SearchbarProps {}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SearchbarState {}
 
-export function Searchbar() {}
+export function Searchbar() {
+  return <div />;
+}
 
 // export class Searchbar extends React.Component<SearchbarProps, SearchbarState> {
 //   render() {
