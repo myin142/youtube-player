@@ -1,8 +1,13 @@
 export interface YoutubeService {
-  getPlaylistVideoInfos(playlist: string): Promise<VideoInfo[]>;
-  downloadVideo(opt: VideoDownloadOptions): Promise<string[]>;
+  getPlaylistVideoInfos(playlist: string): Promise<YoutubePlaylistInfo | null>;
+  downloadVideo(opt: VideoDownloadOptions): Promise<VideoDownloadResult | null>;
   stopAction(): boolean;
   getThumbnail(id: string): string;
+}
+
+export interface YoutubePlaylistInfo {
+  title: string;
+  entries: VideoInfo[];
 }
 
 export interface VideoInfo {
@@ -13,7 +18,6 @@ export interface VideoInfo {
 export interface VideoDownloadOptions {
   id: string;
   location: string;
-  format: VideoFormat;
 }
 
 export enum VideoFormat {

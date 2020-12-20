@@ -32,10 +32,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          yarn test
           yarn package
           #yarn lint
           #yarn tsc
-          #yarn test
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2

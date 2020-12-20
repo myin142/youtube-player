@@ -4,7 +4,9 @@ import * as _ from 'lodash';
 import * as fs from 'fs-extra';
 import {
   VideoDownloadOptions,
+  VideoDownloadResult,
   VideoInfo,
+  YoutubePlaylistInfo,
   YoutubeService,
 } from './youtube.service';
 
@@ -38,7 +40,9 @@ export default class LocalYoutubeDlService implements YoutubeService {
     return `${remote.app.getPath('cache')}/${this.THUMBNAIL_CACHE_FILE}`;
   }
 
-  async getPlaylistVideoInfos(playlist: string): Promise<VideoInfo[]> {
+  async getPlaylistVideoInfos(
+    playlist: string
+  ): Promise<YoutubePlaylistInfo | null> {
     let outputs: string[] = [];
     try {
       outputs = await this.executeYoutubeDL([
@@ -53,30 +57,16 @@ export default class LocalYoutubeDlService implements YoutubeService {
     }
 
     if (outputs.length === 0) {
-      return [];
+      return null;
     }
 
     const data = JSON.parse(outputs[0]);
     // eslint-disable-next-line no-underscore-dangle
     if (data._type !== 'playlist') {
-      return [];
+      return null;
     }
 
-    return Promise.all(
-      data.entries.map((v: YoutubeVideoInfo) =>
-        LocalYoutubeDlService.youtubeToVideoInfo(v)
-      )
-    );
-  }
-
-  private static async youtubeToVideoInfo({
-    id,
-    title,
-  }: YoutubeVideoInfo): Promise<VideoInfo> {
-    return {
-      id,
-      title,
-    };
+    return data;
   }
 
   public getThumbnail(id: string): string {
@@ -109,7 +99,7 @@ export default class LocalYoutubeDlService implements YoutubeService {
   async downloadVideo({
     id,
     location,
-  }: VideoDownloadOptions): Promise<string[]> {
+  }: VideoDownloadOptions): Promise<VideoDownloadResult | null> {
     try {
       const outputs = await this.executeYoutubeDL([
         '--output',
@@ -121,7 +111,7 @@ export default class LocalYoutubeDlService implements YoutubeService {
       ]);
 
       const lines = outputs.join('\n').split('\n');
-      return lines
+      const names = lines
         .map((line) => {
           if (line.includes('Destination: ')) {
             return line.substr(line.indexOf(location)).trim();
@@ -138,11 +128,13 @@ export default class LocalYoutubeDlService implements YoutubeService {
           const parts = fullPath.split('/');
           return parts[parts.length - 1];
         }) as string[];
+
+      return { id, name: names[0] };
     } catch (err) {
       console.log('Download failed');
     }
 
-    return [];
+    return null;
   }
 
   stopAction(): boolean {

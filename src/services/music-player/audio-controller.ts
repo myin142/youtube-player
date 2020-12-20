@@ -1,49 +1,49 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable class-methods-use-this */
 import { EventEmitter } from 'events';
 import fs from 'fs';
-import { MusicPlayer } from './music-player.service';
 
-const MAX_VOLUME = 100;
+export class AudioController extends EventEmitter {
+  private songStartingTime: number | null = null;
 
-class AudioController extends EventEmitter implements MusicPlayer {
+  private buffer: AudioBuffer | null = null;
+
+  private source: AudioBufferSourceNode | null = null;
+
   // eslint-disable-next-line react/static-property-placement
-  context: any;
+  private context: AudioContext;
 
-  volume: number;
+  private gainNode: GainNode | null = null;
 
-  offsetTime: number;
-
-  isPlaying: boolean;
-
-  songStartingTime: any;
-
-  buffer: any;
-
-  songDuration: any;
-
-  playbackTime: number;
-
-  source: any;
-
-  gainNode: any;
-
-  analyser: any;
-
-  pausePlaybackTime: any;
-
-  savedGainValue: any;
-
-  constructor(volume) {
+  constructor() {
     super();
-    const fraction = parseInt(volume, 10) / MAX_VOLUME;
     const AudioContext = global.AudioContext || global.webkitAudioContext;
     this.context = new AudioContext();
-    this.volume = fraction * fraction;
-    this.onSongFinished = this.onSongFinished.bind(this);
-    this.offsetTime = 0;
-    this.isPlaying = false;
-    this.songStartingTime = undefined;
+  }
+
+  get isPlaying(): boolean {
+    return this.context.state === 'running';
+  }
+
+  get volume(): number {
+    const normalizedValue = this.gainNode?.gain.value || 0;
+    return normalizedValue;
+  }
+
+  set volume(volume: number) {
+    if (this.gainNode) {
+      // Prevent volume to get too loud
+      this.gainNode.gain.value = Math.min(volume, 1);
+    }
+  }
+
+  get songDuration(): number {
+    return this.buffer?.duration || 0;
+  }
+
+  get playbackTime(): number {
+    if (this.songStartingTime !== null) {
+      return this.context.currentTime - this.songStartingTime;
+    }
+    return 0;
   }
 
   play(file: string): Promise<void> {
@@ -61,158 +61,72 @@ class AudioController extends EventEmitter implements MusicPlayer {
     });
   }
 
-  playFromBuffer(buffer) {
+  private toArrayBuffer(buffer: Buffer) {
+    const ab = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      view[i] = buffer[i];
+    }
+    return ab;
+  }
+
+  private playFromBuffer(buffer: AudioBuffer) {
     this.stop(false);
     this.buffer = buffer;
     this.initSource();
-    this.offsetTime = 0;
-    this.songDuration = this.buffer.duration;
     this.songStartingTime = this.context.currentTime;
-    this.playbackTime = 0;
-    this.startPlaying();
+    this.source?.start(0, 0);
   }
 
-  startPlaying() {
-    this.isPlaying = true;
-    this.source.start(0, this.playbackTime);
-  }
-
-  initSource() {
-    this.source = this.context.createBufferSource();
-    this.gainNode = this.context.createGain();
-    this.analyser = this.context.createAnalyser();
-    this.source.buffer = this.buffer;
-    this.source.connect(this.gainNode);
-    this.source.connect(this.analyser);
-    this.gainNode.connect(this.context.destination);
-    this.gainNode.gain.value = this.volume;
-    this.source.onended = this.onSongFinished;
-  }
-
-  seek(playbackTime) {
-    if (this.isPlaying) {
-      this.stop(false);
-      this.initSource();
-      this.songStartingTime = this.context.currentTime - playbackTime;
-      this.playbackTime = playbackTime;
-      this.startPlaying();
-    } else {
-      this.songStartingTime = this.context.currentTime - playbackTime;
-      this.playbackTime = playbackTime;
-    }
-  }
-
-  restart() {
-    this.seek(0);
-  }
-
-  getCurrentPlayingTime() {
-    if (typeof this.songStartingTime !== 'undefined') {
-      return this.context.currentTime - this.songStartingTime;
-    }
-    return -1;
-  }
-
-  getSongDuration() {
-    return this.songDuration;
-  }
-
-  onSongFinished() {
-    this.isPlaying = false;
-    this.songDuration = undefined;
-    this.songStartingTime = undefined;
-    this.emit('songFinished');
-  }
-
-  stop(report = true) {
+  private stop(report = true) {
     if (this.source) {
       if (!report) {
-        this.source.onended = undefined;
+        this.source.onended = null;
       }
       this.source.stop(0);
       this.gainNode = null;
     }
   }
 
+  private initSource() {
+    this.source = this.context.createBufferSource();
+    this.gainNode = this.context.createGain();
+    this.source.buffer = this.buffer;
+    this.source.connect(this.gainNode);
+    this.gainNode.connect(this.context.destination);
+    this.source.onended = () => this.onSongFinished();
+  }
+
+  private onSongFinished() {
+    this.emit('songFinished');
+  }
+
+  // seek(playbackTime: number) {
+  //   if (this.isPlaying) {
+  //     // this.stop(false);
+  //     // this.initSource();
+  //     // this.songStartingTime = this.context.currentTime - playbackTime;
+  //     // this.playbackTime = playbackTime;
+  //     // this.source.start(0, this.playbackTime);
+  //     this.pause();
+  //     // this.songStartingTime = this.context.currentTime - playbackTime;
+  //   }
+  //   this.source?.start(playbackTime);
+  // }
+
   pause() {
-    this.isPlaying = false;
-    this.pausePlaybackTime = this.playbackTime;
     this.context.suspend();
   }
 
   resume() {
-    this.isPlaying = true;
     this.context.resume();
-    if (this.pausePlaybackTime !== this.playbackTime) {
-      this.seek(this.playbackTime);
-    }
   }
 
-  mute() {
+  mute(): void {
     if (this.gainNode) {
-      this.savedGainValue = this.gainNode.gain.value;
       this.gainNode.gain.value = 0;
     }
   }
-
-  unmute(volume) {
-    if (this.gainNode) {
-      this.gainNode.gain.value = volume || this.savedGainValue;
-    }
-  }
-
-  setVolume(volume) {
-    const fraction = parseInt(volume, 10) / MAX_VOLUME;
-    this.volume = fraction * fraction; // Linear (x) doesn't sound as good
-    if (this.gainNode) {
-      this.gainNode.gain.value = this.volume;
-    }
-  }
-
-  toArrayBuffer(buffer) {
-    const ab = new ArrayBuffer(buffer.length);
-    const view = new Uint8Array(ab);
-    for (let i = 0; i < buffer.length; ++i) {
-      view[i] = buffer[i];
-    }
-    return ab;
-  }
-
-  // getFrequency(frequencyData) {
-  //   if (!this.analyser) {
-  //     return;
-  //   }
-  //   if (!frequencyData) {
-  //     // eslint-disable-next-line no-param-reassign
-  //     frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
-  //   }
-  //   this.analyser.getByteFrequencyData(frequencyData);
-  //   return frequencyData;
-  // }
-
-  frequencyToIndex(frequency, sampleRate, frequencyBinCount) {
-    const nyquist = sampleRate / 2;
-    const index = Math.round((frequency / nyquist) * frequencyBinCount);
-    return this.clamp(index, 0, frequencyBinCount);
-  }
-
-  analyserAverage(frequencies, minHz, maxHz) {
-    const div = 255;
-    const { sampleRate } = this.analyser.context;
-    const binCount = this.analyser.frequencyBinCount;
-    let start = this.frequencyToIndex(minHz, sampleRate, binCount);
-    const end = this.frequencyToIndex(maxHz, sampleRate, binCount);
-    const count = end - start;
-    let sum = 0;
-    for (; start < end; start++) {
-      sum += frequencies[start] / div;
-    }
-    return count === 0 ? 0 : sum / count;
-  }
-
-  clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
 }
 
-export default AudioController;
+export const audioController = new AudioController();

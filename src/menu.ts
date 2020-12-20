@@ -204,14 +204,6 @@ export default class MenuBuilder {
   buildDefaultTemplate() {
     const viewMenus = [
       {
-        label: 'Search',
-        accelerator: 'F3',
-        click: () => {
-          // TODO: share url paths
-          this.mainWindow.webContents.send(AppEvent.REDIRECT, '/search');
-        },
-      },
-      {
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click: () => {
@@ -252,9 +244,7 @@ export default class MenuBuilder {
               });
 
               if (!paths.canceled && paths.filePaths.length > 0) {
-                const url = `/library/${encodeURIComponent(
-                  paths.filePaths[0]
-                )}`;
+                const url = `/player/${encodeURIComponent(paths.filePaths[0])}`;
 
                 this.mainWindow.webContents.send(AppEvent.REDIRECT, url);
               }

@@ -6,9 +6,8 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom';
-import { SearchPage } from './pages/search/SearchPage';
-import { LibraryPage } from './pages/library/LibraryPage';
 import { AppEvent } from './services/event.service';
+import YoutubePlayerPage from './youtube-player/YoutubePlayerPage';
 
 interface AppState {
   redirect: string;
@@ -36,11 +35,10 @@ export default class App extends React.Component<unknown, AppState> {
       <Router>
         {redirect && <Redirect to={redirect} />}
         <Switch>
-          <Route path="/library/:path" component={LibraryPage} />
-          <Route path="/search" component={SearchPage} />
+          <Route path="/player/:path" component={YoutubePlayerPage} />
 
           <Route path="/">
-            <Redirect to="/library/." />
+            <Redirect to="/player/." />
           </Route>
         </Switch>
       </Router>
