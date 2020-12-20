@@ -46,11 +46,19 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
     }
   }
 
+  private folderSort(a: PlaylistFolderInfo, b: PlaylistFolderInfo): number {
+    if (!a.playlist || !b.playlist) {
+      return a.playlist ? -1 : 1;
+    }
+
+    return a.playlist.title.localeCompare(b.playlist.title);
+  }
+
   render() {
     const { onPlaylistSelected, playlistFolder } = this.props;
     const { folderInfos } = this.state;
 
-    const playlists = folderInfos.map((i) => {
+    const playlists = folderInfos.sort(this.folderSort).map((i) => {
       return (
         <li key={i.fullPath}>
           <button
