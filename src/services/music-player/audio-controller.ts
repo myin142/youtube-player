@@ -24,7 +24,7 @@ export class AudioController extends EventEmitter {
   }
 
   get volume(): number {
-    const normalizedValue = this.gainNode?.gain.value || 0;
+    const normalizedValue = this.gainNode?.gain.value || 1;
     return normalizedValue;
   }
 

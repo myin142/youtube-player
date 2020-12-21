@@ -36,7 +36,7 @@ export class MusicPlayer extends React.Component<
 
   componentDidMount() {
     this.audioController.addListener('songFinished', () => {
-      this.play(this.getNextVideoToPlay());
+      this.props.onVideoPlay(this.getNextVideoToPlay());
     });
   }
 
@@ -87,19 +87,15 @@ export class MusicPlayer extends React.Component<
   }
 
   private async play(video = this.props.playingVideo) {
-    const { onVideoPlay } = this.props;
     const { volume } = this.state;
 
     if (video && video.fileName) {
-      console.log(video);
       await this.audioController.play(video.fileName);
       this.audioController.volume = volume;
       this.setState({
         isPlaying: true,
         songDuration: this.audioController.songDuration,
       });
-
-      onVideoPlay(video);
     } else {
       console.warn('Cannot play not downloaded video');
     }
@@ -121,7 +117,7 @@ export class MusicPlayer extends React.Component<
 
   render() {
     const { playingVideo } = this.props;
-    const { isPlaying, songDuration, volume, isLoop, isRandom } = this.state;
+    const { isPlaying, songDuration, volume, isRandom } = this.state;
 
     return (
       <div>
