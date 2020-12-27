@@ -30,6 +30,8 @@ export default class App extends React.Component<unknown, AppState> {
 
   render() {
     const { redirect } = this.state;
+    const folder = process.cwd();
+    const defaultUrl = `/player/${encodeURIComponent(folder)}`;
 
     return (
       <Router>
@@ -38,7 +40,7 @@ export default class App extends React.Component<unknown, AppState> {
           <Route path="/player/:path" component={YoutubePlayerPage} />
 
           <Route path="/">
-            <Redirect to="/player/." />
+            <Redirect to={defaultUrl} />
           </Route>
         </Switch>
       </Router>

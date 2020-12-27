@@ -14,6 +14,8 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import minimist from 'minimist';
+import * as fs from 'fs-extra';
 import MenuBuilder from './menu';
 
 export default class AppUpdater {
@@ -109,8 +111,25 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  new AppUpdater();
+  // new AppUpdater();
 };
+
+const argv = minimist(process.argv.slice(1));
+const dir = argv._[0];
+const stat = fs.statSync(dir);
+if (stat.isDirectory()) {
+  if (dir) {
+    process.env.YT_PLAYER_CWD = dir;
+  }
+
+  if (!process.env.YT_PLAYER_CWD) {
+    process.env.YT_PLAYER_CWD = process.cwd();
+  }
+
+  process.chdir(process.env.YT_PLAYER_CWD);
+} else {
+  console.log(`"${dir}" is not a directory`);
+}
 
 /**
  * Add event listeners...
