@@ -116,19 +116,21 @@ const createWindow = async () => {
 
 const argv = minimist(process.argv.slice(1));
 const dir = argv._[0];
-const stat = fs.statSync(dir);
-if (stat.isDirectory()) {
-  if (dir) {
-    process.env.YT_PLAYER_CWD = dir;
-  }
+if (dir && fs.existsSync(dir)) {
+  const stat = fs.statSync(dir);
+  if (stat.isDirectory()) {
+    if (dir) {
+      process.env.YT_PLAYER_CWD = dir;
+    }
 
-  if (!process.env.YT_PLAYER_CWD) {
-    process.env.YT_PLAYER_CWD = process.cwd();
-  }
+    if (!process.env.YT_PLAYER_CWD) {
+      process.env.YT_PLAYER_CWD = process.cwd();
+    }
 
-  process.chdir(process.env.YT_PLAYER_CWD);
-} else {
-  console.log(`"${dir}" is not a directory`);
+    process.chdir(process.env.YT_PLAYER_CWD);
+  } else {
+    console.log(`"${dir}" is not a directory`);
+  }
 }
 
 /**
