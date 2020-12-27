@@ -5,6 +5,7 @@ import { PlaylistService } from '../services/playlist.service';
 
 export interface PlaylistsProps {
   playlistFolder: string;
+  selectedPlaylist: PlaylistFolderInfo | null;
   playlistService: PlaylistService;
   onPlaylistSelected: (i: PlaylistFolderInfo | null) => void;
 }
@@ -90,7 +91,7 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
   }
 
   render() {
-    const { onPlaylistSelected, playlistFolder } = this.props;
+    const { onPlaylistSelected, playlistFolder, selectedPlaylist } = this.props;
     const {
       folderInfos,
       showCreatePlaylist,
@@ -105,6 +106,11 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
             type="button"
             onClick={() => onPlaylistSelected(i)}
             onKeyPress={() => onPlaylistSelected(i)}
+            style={
+              selectedPlaylist?.fullPath === i.fullPath
+                ? { fontWeight: 'bold' }
+                : {}
+            }
           >
             {i.name}: {i.playlist?.title || 'Not a playlist'}
           </button>

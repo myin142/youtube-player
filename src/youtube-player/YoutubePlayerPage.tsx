@@ -96,6 +96,7 @@ class YoutubePlayerPage extends React.Component<
         <div className="flex-horizontal">
           <div className="flex-vertical" style={{ flexShrink: 2 }}>
             <Playlists
+              selectedPlaylist={selectedPlaylist}
               playlistFolder={decodeURIComponent(param.path)}
               playlistService={this.playlistService}
               onPlaylistSelected={(i) => this.setState({ selectedPlaylist: i })}
