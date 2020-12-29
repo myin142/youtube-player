@@ -1,5 +1,6 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
+import { FaSync } from 'react-icons/fa';
 import { PlaylistService } from '../services/playlist.service';
 import { MusicPlayer } from './music-player/MusicPlayer';
 import PlaylistQueue from './PlaylistQueue';
@@ -17,6 +18,7 @@ export interface YoutubePlayerPageState {
   selectedPlaylist: PlaylistFolderInfo | null;
   playingPlaylist: PlaylistFolderInfo | null;
   playingVideo: PlaylistVideo | null;
+  loading: boolean;
 }
 
 interface PathParam {
@@ -38,6 +40,7 @@ class YoutubePlayerPage extends React.Component<
       selectedPlaylist: null,
       playingPlaylist: null,
       playingVideo: null,
+      loading: false,
     };
   }
 
@@ -64,6 +67,60 @@ class YoutubePlayerPage extends React.Component<
     }
   }
 
+  private async loadPlaylistVideos(
+    playlistId = this.state.selectedPlaylist?.playlist?.playlistId
+  ) {
+    if (!playlistId) {
+      console.log('Cannot load playlist videos without id');
+      return;
+    }
+
+    const { loading, selectedPlaylist } = this.state;
+    if (loading) {
+      console.log('Already loading something');
+      return;
+    }
+
+    this.setState({ loading: true });
+
+    const info = await this.youtubeService.getPlaylistVideoInfos(playlistId);
+
+    if (info != null) {
+      const existingVideos = selectedPlaylist?.playlist.videos || [];
+      const mergedVideos: PlaylistVideo[] = [];
+
+      info.entries.forEach((e) => {
+        // Load thumbnail to cache earlier
+        this.youtubeService.getThumbnail(e.id);
+
+        const entry: PlaylistVideo = {
+          id: e.id,
+          title: e.title,
+        };
+
+        const existing = existingVideos.find((v) => v.id === e.id);
+        if (!existing) {
+          mergedVideos.push(entry);
+        } else {
+          mergedVideos.push({
+            ...existing,
+            ...entry,
+          });
+        }
+      });
+
+      this.updatePlaylistFolder({
+        playlist: {
+          playlistId,
+          videos: mergedVideos,
+          title: info.title,
+        },
+      });
+    }
+
+    this.setState({ loading: false });
+  }
+
   render() {
     const { selectedPlaylist, playingVideo, playingPlaylist } = this.state;
     const param = this.props.match.params as PathParam;
@@ -85,7 +142,7 @@ class YoutubePlayerPage extends React.Component<
         mainPage = (
           <NewPlaylist
             youtubeService={this.youtubeService}
-            onNewPlaylist={(i) => this.updatePlaylistFolder(i)}
+            onNewPlaylist={(i) => this.loadPlaylistVideos(i)}
           />
         );
       }
@@ -110,7 +167,16 @@ class YoutubePlayerPage extends React.Component<
             )}
           </div>
           <div style={{ flexGrow: 2 }}>
-            <Searchbar />
+            <div className="flex-horizontal">
+              <Searchbar />
+              {selectedPlaylist && (
+                <FaSync
+                  className="pointer"
+                  onClick={() => this.loadPlaylistVideos()}
+                  title="Reload playlist videos"
+                />
+              )}
+            </div>
             {mainPage}
           </div>
           {playingVideo && (

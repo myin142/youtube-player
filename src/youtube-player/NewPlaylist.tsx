@@ -1,10 +1,9 @@
 import React, { ChangeEvent } from 'react';
-import { PlaylistFolderInfo } from '../redux/playlist/types';
 import { YoutubeService } from '../services/youtube.service';
 
 interface NewPlaylistProps {
   youtubeService: YoutubeService;
-  onNewPlaylist: (i: Partial<PlaylistFolderInfo>) => void;
+  onNewPlaylist: (id: string) => void;
 }
 
 interface NewPlaylistState {
@@ -25,29 +24,10 @@ export default class NewPlaylist extends React.Component<
   }
 
   private async onCreatePlaylist() {
-    const { onNewPlaylist, youtubeService } = this.props;
+    const { onNewPlaylist } = this.props;
     const { playlistId } = this.state;
-
     this.setState({ loading: true });
-
-    const info = await youtubeService.getPlaylistVideoInfos(playlistId);
-
-    if (info != null) {
-      // Load thumbnail to cache earlier
-      youtubeService.getThumbnail(playlistId);
-
-      this.setState({ playlistId: '', loading: false });
-      onNewPlaylist({
-        playlist: {
-          playlistId,
-          videos: info.entries.map((e) => ({
-            id: e.id,
-            title: e.title,
-          })),
-          title: info.title,
-        },
-      });
-    }
+    onNewPlaylist(playlistId);
   }
 
   private setPlaylistId({ target }: ChangeEvent<HTMLInputElement>) {
