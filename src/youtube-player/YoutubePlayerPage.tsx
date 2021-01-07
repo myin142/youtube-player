@@ -149,45 +149,46 @@ class YoutubePlayerPage extends React.Component<
     }
 
     return (
-      <div>
-        <div className="flex-horizontal">
-          <div className="flex-vertical" style={{ flexShrink: 2 }}>
-            <Playlists
-              selectedPlaylist={selectedPlaylist}
-              playlistFolder={decodeURIComponent(param.path)}
-              playlistService={this.playlistService}
-              onPlaylistSelected={(i) => this.setState({ selectedPlaylist: i })}
+      <div className="grid">
+        <div className="browser">
+          <Playlists
+            selectedPlaylist={selectedPlaylist}
+            playlistFolder={decodeURIComponent(param.path)}
+            playlistService={this.playlistService}
+            onPlaylistSelected={(i) => this.setState({ selectedPlaylist: i })}
+          />
+          {playingVideo && (
+            <img
+              src={this.youtubeService.getThumbnail(playingVideo.id)}
+              alt="Playing Video Thumbnail"
+              className="fit"
             />
-            {playingVideo && (
-              <img
-                src={this.youtubeService.getThumbnail(playingVideo.id)}
-                alt="Playing Video Thumbnail"
-                className="fit"
-              />
-            )}
-          </div>
-          <div style={{ flexGrow: 2 }}>
-            <div className="flex-horizontal">
-              <Searchbar />
-              {selectedPlaylist && (
-                <FaSync
-                  className="pointer"
-                  onClick={() => this.loadPlaylistVideos()}
-                  title="Reload playlist videos"
-                />
-              )}
-            </div>
-            {mainPage}
-          </div>
+          )}
+        </div>
+        <div className="search">
+          <Searchbar />
+          {selectedPlaylist && (
+            <FaSync
+              className="pointer"
+              onClick={() => this.loadPlaylistVideos()}
+              title="Reload playlist videos"
+            />
+          )}
+        </div>
+
+        <div className="main">{mainPage}</div>
+        <div className="queue">
           {playingVideo && (
             <PlaylistQueue playingVideo={playingVideo} nextQueue={[]} />
           )}
         </div>
-        <MusicPlayer
-          playingVideos={playingPlaylist?.playlist.videos || []}
-          playingVideo={playingVideo}
-          onVideoPlay={(v) => this.setState({ playingVideo: v })}
-        />
+        <div className="player">
+          <MusicPlayer
+            playingVideos={playingPlaylist?.playlist.videos || []}
+            playingVideo={playingVideo}
+            onVideoPlay={(v) => this.setState({ playingVideo: v })}
+          />
+        </div>
       </div>
     );
   }
