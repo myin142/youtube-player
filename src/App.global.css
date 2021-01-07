@@ -34,8 +34,8 @@ img.fit {
   height: 100vh;
   padding: 1em;
   display: grid;
-  grid-template-columns: 10rem auto 1fr;
-  grid-template-rows: 1rem auto 1fr;
+  grid-template-columns: 10rem auto 10rem;
+  grid-template-rows: 1rem auto 3rem;
   grid-template-areas:
     'browser search queue'
     'browser main queue'
