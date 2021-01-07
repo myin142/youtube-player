@@ -86,7 +86,7 @@ class YoutubePlayerPage extends React.Component<
     const info = await this.youtubeService.getPlaylistVideoInfos(playlistId);
 
     if (info != null) {
-      const existingVideos = selectedPlaylist?.playlist.videos || [];
+      const existingVideos = selectedPlaylist?.playlist?.videos || [];
       const mergedVideos: PlaylistVideo[] = [];
 
       info.entries.forEach((e) => {
@@ -184,7 +184,7 @@ class YoutubePlayerPage extends React.Component<
         </div>
         <div className="player">
           <MusicPlayer
-            playingVideos={playingPlaylist?.playlist.videos || []}
+            playingVideos={playingPlaylist?.playlist?.videos || []}
             playingVideo={playingVideo}
             onVideoPlay={(v) => this.setState({ playingVideo: v })}
           />
