@@ -1,5 +1,6 @@
+/* eslint-disable no-return-assign */
 import React from 'react';
-import { FaPause, FaPlay, FaRandom, FaUndo } from 'react-icons/fa';
+import { FaPause, FaPlay, FaRandom } from 'react-icons/fa';
 import { PlaylistVideo } from '../../redux/playlist/types';
 import { audioController } from '../../services/music-player/audio-controller';
 import { PlaybackControls } from './PlaybackControls';
@@ -22,6 +23,8 @@ export class MusicPlayer extends React.Component<
   MusicPlayerProps,
   MusicPlayerStats
 > {
+  private static VOLUME_STEPS = 0.1;
+
   private readonly audioController = audioController;
 
   constructor(props: MusicPlayerProps) {
@@ -32,9 +35,14 @@ export class MusicPlayer extends React.Component<
       volume: this.audioController.volume,
       isRandom: true,
     };
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   componentDidMount() {
+    this.clearListeners();
+    document.addEventListener('keydown', this.handleKeyDown);
+
     this.audioController.addListener('songFinished', () => {
       this.props.onVideoPlay(this.getNextVideoToPlay());
     });
@@ -48,8 +56,7 @@ export class MusicPlayer extends React.Component<
   }
 
   componentWillUnmount() {
-    // Right now this class should be the only listener
-    this.audioController.removeAllListeners('songFinished');
+    this.clearListeners();
   }
 
   private getNextVideoToPlay(): PlaylistVideo {
@@ -76,14 +83,56 @@ export class MusicPlayer extends React.Component<
     return playingVideos[idx];
   }
 
-  private setVolume(volume: number): void {
-    this.audioController.volume = volume;
-    this.setState({ volume });
+  private get volume(): number {
+    return this.state.volume;
+  }
+
+  private set volume(vol: number) {
+    this.audioController.volume = vol;
+    console.log(this.audioController.volume);
+    this.setState({ volume: this.audioController.volume });
+  }
+
+  private handleKeyDown(ev: KeyboardEvent) {
+    const preventEvent = ['INPUT', 'BUTTON'];
+    if (preventEvent.includes(document.activeElement?.tagName || '')) {
+      return;
+    }
+
+    const keybindings: { [k: string]: () => void } = {
+      ' ': () => this.toggleMusic(),
+      ArrowLeft: () => (this.volume -= MusicPlayer.VOLUME_STEPS),
+      ArrowRight: () => (this.volume += MusicPlayer.VOLUME_STEPS),
+    };
+
+    const fn = keybindings[ev.key];
+    if (fn) {
+      fn();
+    }
+  }
+
+  private clearListeners() {
+    // Right now this class should be the only listener
+    this.audioController.removeAllListeners('songFinished');
+    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   private toggleRandom() {
     const { isRandom } = this.state;
     this.setState({ isRandom: !isRandom });
+  }
+
+  private toggleMusic() {
+    if (this.props.playingVideo == null) {
+      return;
+    }
+
+    const { isPlaying } = this.state;
+    if (isPlaying) {
+      this.pause();
+    } else {
+      this.resume();
+    }
   }
 
   private async play(video = this.props.playingVideo) {
@@ -143,7 +192,7 @@ export class MusicPlayer extends React.Component<
             />
             <VolumeControls
               volume={volume}
-              onVolumeChange={(v) => this.setVolume(v)}
+              onVolumeChange={(v) => (this.volume = v)}
             />
           </div>
         )}

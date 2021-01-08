@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import { clamp } from 'lodash';
 
 export class AudioController extends EventEmitter {
   private songStartingTime: number | null = null;
@@ -24,14 +25,17 @@ export class AudioController extends EventEmitter {
   }
 
   get volume(): number {
-    const normalizedValue = this.gainNode?.gain.value || 1;
+    let normalizedValue = this.gainNode?.gain.value;
+    if (normalizedValue == null) {
+      normalizedValue = 1;
+    }
     return normalizedValue;
   }
 
   set volume(volume: number) {
     if (this.gainNode) {
       // Prevent volume to get too loud
-      this.gainNode.gain.value = Math.min(volume, 1);
+      this.gainNode.gain.value = clamp(volume, 0, 1);
     }
   }
 
