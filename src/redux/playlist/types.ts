@@ -14,6 +14,7 @@ export interface PlaylistVideo {
   id: string;
   title: string;
   fileName?: string;
+  disabled?: boolean;
 }
 
 export interface PlaylistState {

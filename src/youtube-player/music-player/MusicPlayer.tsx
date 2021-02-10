@@ -7,6 +7,7 @@ import { PlaybackControls } from './PlaybackControls';
 import { VolumeControls } from './VolumeControls';
 
 export interface MusicPlayerProps {
+  videoChanged: boolean;
   playingVideos: PlaylistVideo[];
   playingVideo: PlaylistVideo | null;
   onVideoPlay: (v: PlaylistVideo) => void;
@@ -44,13 +45,16 @@ export class MusicPlayer extends React.Component<
     document.addEventListener('keydown', this.handleKeyDown);
 
     this.audioController.addListener('songFinished', () => {
-      this.props.onVideoPlay(this.getNextVideoToPlay());
+      const vid = this.getNextVideoToPlay();
+      if (vid) {
+        this.props.onVideoPlay(vid);
+      }
     });
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {
-    const { playingVideo } = this.props;
-    if (prevProps.playingVideo?.id !== playingVideo?.id) {
+    const { videoChanged } = this.props;
+    if (prevProps.videoChanged !== videoChanged) {
       this.play();
     }
   }
@@ -59,9 +63,11 @@ export class MusicPlayer extends React.Component<
     this.clearListeners();
   }
 
-  private getNextVideoToPlay(): PlaylistVideo {
+  private getNextVideoToPlay(): PlaylistVideo | null {
     const { playingVideos, playingVideo } = this.props;
     const { isRandom } = this.state;
+
+    if (playingVideos.length === 0) return null;
 
     const currentIndex = playingVideos.findIndex(
       (v) => v.id === playingVideo?.id
@@ -77,9 +83,10 @@ export class MusicPlayer extends React.Component<
     };
 
     let idx = currentIndex;
-    while (idx === currentIndex) {
+    do {
       idx = isRandom ? randomVideoIdx() : nextVideoIdx();
-    }
+    } while (idx === currentIndex && playingVideos.length > 1);
+
     return playingVideos[idx];
   }
 
@@ -89,7 +96,6 @@ export class MusicPlayer extends React.Component<
 
   private set volume(vol: number) {
     this.audioController.volume = vol;
-    console.log(this.audioController.volume);
     this.setState({ volume: this.audioController.volume });
   }
 

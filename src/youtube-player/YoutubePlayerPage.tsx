@@ -19,6 +19,7 @@ export interface YoutubePlayerPageState {
   playingPlaylist: PlaylistFolderInfo | null;
   playingVideo: PlaylistVideo | null;
   loading: boolean;
+  videoChanged: boolean;
 }
 
 interface PathParam {
@@ -41,15 +42,32 @@ class YoutubePlayerPage extends React.Component<
       playingPlaylist: null,
       playingVideo: null,
       loading: false,
+      videoChanged: false,
     };
   }
 
   private playFromCurrentPlaylist(video: PlaylistVideo) {
-    const { selectedPlaylist } = this.state;
+    const { selectedPlaylist, videoChanged } = this.state;
     this.setState({
       playingPlaylist: selectedPlaylist,
       playingVideo: video,
+      videoChanged: !videoChanged,
     });
+  }
+
+  updatePlaylistVideo(video: PlaylistVideo) {
+    const { selectedPlaylist } = this.state;
+    const playlist = selectedPlaylist?.playlist;
+
+    if (playlist == null) return;
+
+    const currentVideos = playlist?.videos || [];
+    const index = currentVideos.findIndex((v) => v.id === video.id);
+
+    if (index !== -1) {
+      playlist.videos[index] = video;
+      this.updatePlaylistFolder({ playlist });
+    }
   }
 
   updatePlaylistFolder(folder: Partial<PlaylistFolderInfo>) {
@@ -121,8 +139,15 @@ class YoutubePlayerPage extends React.Component<
     this.setState({ loading: false });
   }
 
+  private playableVideos(): PlaylistVideo[] {
+    return (
+      this.state.playingPlaylist?.playlist.videos.filter((v) => !v.disabled) ||
+      []
+    );
+  }
+
   render() {
-    const { selectedPlaylist, playingVideo, playingPlaylist } = this.state;
+    const { selectedPlaylist, playingVideo, videoChanged } = this.state;
     const param = this.props.match.params as PathParam;
 
     let mainPage = null;
@@ -135,7 +160,8 @@ class YoutubePlayerPage extends React.Component<
             playlist={selectedPlaylist.playlist}
             playlistFolder={selectedPlaylist.fullPath}
             onVideoClick={(v) => this.playFromCurrentPlaylist(v)}
-            onDownloaded={(p) => this.updatePlaylistFolder({ playlist: p })}
+            onPlaylistUpdate={(p) => this.updatePlaylistFolder({ playlist: p })}
+            onVideoUpdate={(v) => this.updatePlaylistVideo(v)}
           />
         );
       } else {
@@ -184,9 +210,12 @@ class YoutubePlayerPage extends React.Component<
         </div>
         <div className="player">
           <MusicPlayer
-            playingVideos={playingPlaylist?.playlist?.videos || []}
+            videoChanged={videoChanged}
+            playingVideos={this.playableVideos()}
             playingVideo={playingVideo}
-            onVideoPlay={(v) => this.setState({ playingVideo: v })}
+            onVideoPlay={(v) =>
+              this.setState({ playingVideo: v, videoChanged: !videoChanged })
+            }
           />
         </div>
       </div>

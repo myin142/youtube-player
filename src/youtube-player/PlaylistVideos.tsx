@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { PlaylistInfo, PlaylistVideo } from '../redux/playlist/types';
 import {
   VideoDownloadResult,
@@ -11,7 +11,8 @@ interface VideoListProps {
   playlist: PlaylistInfo;
   youtubeService: YoutubeService;
   onVideoClick: (x: PlaylistVideo) => void;
-  onDownloaded: (x: PlaylistInfo) => void;
+  onPlaylistUpdate: (x: PlaylistInfo) => void;
+  onVideoUpdate: (x: PlaylistVideo) => void;
 }
 
 interface VideoListState {
@@ -32,7 +33,7 @@ export default class PlaylistVideos extends React.Component<
   async download(ids: string[]) {
     const { downloading } = this.state;
     const {
-      onDownloaded,
+      onPlaylistUpdate,
       youtubeService,
       playlistFolder,
       playlist,
@@ -73,7 +74,7 @@ export default class PlaylistVideos extends React.Component<
       return v;
     });
 
-    onDownloaded({
+    onPlaylistUpdate({
       ...playlist,
       videos: updatedVideos,
     });
@@ -85,6 +86,26 @@ export default class PlaylistVideos extends React.Component<
     const { playlist } = this.props;
     const ids = playlist.videos.map((v) => v.id);
     this.download(ids);
+  }
+
+  private toggleVideo(
+    { target }: ChangeEvent<HTMLInputElement>,
+    video: PlaylistVideo
+  ) {
+    const { onVideoUpdate } = this.props;
+    video.disabled = !target.checked;
+    onVideoUpdate(video);
+  }
+
+  private toggleAllVideos() {
+    const { playlist, onPlaylistUpdate } = this.props;
+    const disabled = playlist.videos.every((v) => !v.disabled);
+
+    playlist.videos.forEach((v) => {
+      v.disabled = disabled;
+    });
+
+    onPlaylistUpdate(playlist);
   }
 
   render() {
@@ -110,21 +131,34 @@ export default class PlaylistVideos extends React.Component<
       .filter((v) => !!v.fileName)
       .map((v) => {
         return (
-          <li key={v.id}>
+          <li key={v.id} className="flex-horizontal">
+            <input
+              type="checkbox"
+              checked={!v.disabled}
+              onChange={(e) => this.toggleVideo(e, v)}
+            />
             <PlaylistVideoBlock
               playlistVideo={v}
               youtubeService={youtubeService}
+              disabled={v.disabled}
               onClick={() => onVideoClick(v)}
             />
           </li>
         );
       });
 
+    const enabled = playlist.videos.every((v) => !v.disabled);
+
     return (
       <div>
         {downloadedVideos.length > 0 && (
           <div>
             <h2>Downloaded Videos</h2>
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={() => this.toggleAllVideos()}
+            />
             <ul>{downloadedVideos}</ul>
           </div>
         )}
