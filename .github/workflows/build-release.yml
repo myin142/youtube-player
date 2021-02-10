@@ -63,9 +63,11 @@ jobs:
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
-        env:
-          REPO: ${{ github.repository }}
+        with:
+          package-dir: 'src/package.json'
 
+        # env:
+        # REPO: ${{ github.repository }}
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
@@ -73,7 +75,7 @@ jobs:
         with:
           name: Release ${{ github.ref }}
           body: ${{ steps.Changelog.outputs.changelog }}
-          draft: true
+          draft: false
           prerelease: false
           files: |
             release/*
