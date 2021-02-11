@@ -1,6 +1,6 @@
 /* eslint-disable no-return-assign */
 import React from 'react';
-import { FaPause, FaPlay, FaRandom } from 'react-icons/fa';
+import { FaPause, FaPlay, FaRandom, FaStepForward } from 'react-icons/fa';
 import { PlaylistVideo } from '../../redux/playlist/types';
 import { audioController } from '../../services/music-player/audio-controller';
 import { PlaybackControls } from './PlaybackControls';
@@ -44,12 +44,9 @@ export class MusicPlayer extends React.Component<
     this.clearListeners();
     document.addEventListener('keydown', this.handleKeyDown);
 
-    this.audioController.addListener('songFinished', () => {
-      const vid = this.getNextVideoToPlay();
-      if (vid) {
-        this.props.onVideoPlay(vid);
-      }
-    });
+    this.audioController.addListener('songFinished', () =>
+      this.playNextVideo()
+    );
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {
@@ -61,6 +58,13 @@ export class MusicPlayer extends React.Component<
 
   componentWillUnmount() {
     this.clearListeners();
+  }
+
+  private playNextVideo() {
+    const vid = this.getNextVideoToPlay();
+    if (vid) {
+      this.props.onVideoPlay(vid);
+    }
   }
 
   private getNextVideoToPlay(): PlaylistVideo | null {
@@ -107,8 +111,9 @@ export class MusicPlayer extends React.Component<
 
     const keybindings: { [k: string]: () => void } = {
       ' ': () => this.toggleMusic(),
-      ArrowLeft: () => (this.volume -= MusicPlayer.VOLUME_STEPS),
-      ArrowRight: () => (this.volume += MusicPlayer.VOLUME_STEPS),
+      ArrowDown: () => (this.volume -= MusicPlayer.VOLUME_STEPS),
+      ArrowUp: () => (this.volume += MusicPlayer.VOLUME_STEPS),
+      ArrowRight: () => this.playNextVideo(),
     };
 
     const fn = keybindings[ev.key];
@@ -183,6 +188,7 @@ export class MusicPlayer extends React.Component<
                 {(isPlaying && <FaPause onClick={() => this.pause()} />) || (
                   <FaPlay onClick={() => this.resume()} />
                 )}
+                <FaStepForward onClick={() => this.playNextVideo()} />
               </div>
               <div>
                 <FaRandom

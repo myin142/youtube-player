@@ -5,6 +5,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'import/prefer-default-export': 'off',
     'react/destructuring-assignment': 'off',
+    'react/sort-comp': 'off',
     'class-methods-use-this': 'off',
     'no-plusplus': 'off',
   },
