@@ -118,6 +118,7 @@ export class MusicPlayer extends React.Component<
 
     const fn = keybindings[ev.key];
     if (fn) {
+      ev.preventDefault();
       fn();
     }
   }
