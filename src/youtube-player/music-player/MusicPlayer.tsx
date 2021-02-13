@@ -1,17 +1,13 @@
-/* eslint-disable no-return-assign */
 import React from 'react';
 import { FaPause, FaPlay, FaRandom, FaStepForward } from 'react-icons/fa';
-import { PlaylistVideo } from '../../redux/playlist/types';
+import { connect } from 'react-redux';
+import { videoActions, VideoActionType } from '../../redux/actions';
+import { PlaylistVideo, YoutubePlayerState } from '../../redux/types';
 import { audioController } from '../../services/music-player/audio-controller';
 import { PlaybackControls } from './PlaybackControls';
 import { VolumeControls } from './VolumeControls';
 
-export interface MusicPlayerProps {
-  videoChanged: boolean;
-  playingVideos: PlaylistVideo[];
-  playingVideo: PlaylistVideo | null;
-  onVideoPlay: (v: PlaylistVideo) => void;
-}
+type MusicPlayerProps = YoutubePlayerState & VideoActionType;
 
 export interface MusicPlayerStats {
   isPlaying: boolean;
@@ -20,10 +16,7 @@ export interface MusicPlayerStats {
   isRandom: boolean;
 }
 
-export class MusicPlayer extends React.Component<
-  MusicPlayerProps,
-  MusicPlayerStats
-> {
+class MusicPlayer extends React.Component<MusicPlayerProps, MusicPlayerStats> {
   private static VOLUME_STEPS = 0.1;
 
   private readonly audioController = audioController;
@@ -63,7 +56,7 @@ export class MusicPlayer extends React.Component<
   private playNextVideo() {
     const vid = this.getNextVideoToPlay();
     if (vid) {
-      this.props.onVideoPlay(vid);
+      this.props.playVideo(vid);
     }
   }
 
@@ -176,6 +169,13 @@ export class MusicPlayer extends React.Component<
     });
   }
 
+  private playableVideos(): PlaylistVideo[] {
+    return (
+      this.props.playingPlaylist?.playlist.videos.filter((v) => !v.disabled) ||
+      []
+    );
+  }
+
   render() {
     const { playingVideo } = this.props;
     const { isPlaying, songDuration, volume, isRandom } = this.state;
@@ -213,3 +213,15 @@ export class MusicPlayer extends React.Component<
     );
   }
 }
+
+const mapStateToProps = ({
+  playingVideo,
+  videoChanged,
+  playingPlaylist,
+}: YoutubePlayerState): YoutubePlayerState => ({
+  playingVideo,
+  videoChanged,
+  playingPlaylist,
+});
+
+export default connect(mapStateToProps, videoActions)(MusicPlayer);

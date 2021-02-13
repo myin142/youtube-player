@@ -1,5 +1,5 @@
 import React, { MouseEventHandler } from 'react';
-import { PlaylistVideo } from '../redux/playlist/types';
+import { PlaylistVideo } from '../redux/types';
 import { YoutubeService } from '../services/youtube.service';
 
 export interface PlaylistVideoBlockProps {

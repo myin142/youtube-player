@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import * as fs from 'fs-extra';
-import { PlaylistFolderInfo } from '../redux/playlist/types';
+import { PlaylistFolderInfo } from '../redux/types';
 import { PlaylistService } from '../services/playlist.service';
 
 export interface PlaylistsProps {

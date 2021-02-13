@@ -8,6 +8,7 @@ module.exports = {
     'react/sort-comp': 'off',
     'class-methods-use-this': 'off',
     'no-plusplus': 'off',
+    'no-return-assign': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

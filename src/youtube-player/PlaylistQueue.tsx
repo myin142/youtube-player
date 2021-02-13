@@ -1,15 +1,12 @@
 import React from 'react';
-import { PlaylistVideo } from '../redux/playlist/types';
+import { connect } from 'react-redux';
+import { PlaylistVideo, YoutubePlayerState } from '../redux/types';
 
-interface PlaylistQueueProps {
-  playingVideo: PlaylistVideo;
+type PlaylistQueueProps = YoutubePlayerState & {
   nextQueue: PlaylistVideo[];
-}
+};
 
-export default function PlaylistQueue({
-  playingVideo,
-  nextQueue,
-}: PlaylistQueueProps) {
+function PlaylistQueue({ playingVideo, nextQueue }: PlaylistQueueProps) {
   const queueItems = nextQueue.map((v, i) => {
     // eslint-disable-next-line react/no-array-index-key
     return <li key={i}>{v.title}</li>;
@@ -32,3 +29,9 @@ export default function PlaylistQueue({
     </div>
   );
 }
+
+const mapStateToProps = ({
+  playingVideo,
+}: YoutubePlayerState): YoutubePlayerState => ({ playingVideo });
+
+export default connect(mapStateToProps)(PlaylistQueue);

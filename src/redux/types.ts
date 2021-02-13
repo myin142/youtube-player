@@ -17,15 +17,8 @@ export interface PlaylistVideo {
   disabled?: boolean;
 }
 
-export interface PlaylistState {
-  playingVideo: PlaylistVideo | null;
+export interface YoutubePlayerState {
+  playingPlaylist?: PlaylistFolderInfo;
+  playingVideo?: PlaylistVideo;
+  videoChanged?: boolean;
 }
-
-export const PLAY_VIDEO = 'PLAY_VIDEO';
-
-interface PlayVideoAction {
-  type: typeof PLAY_VIDEO;
-  payload: PlaylistVideo;
-}
-
-export type PlaylistActionTypes = PlayVideoAction;

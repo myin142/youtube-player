@@ -1,4 +1,4 @@
-// import { createStore } from 'redux';
-// import { playlistReducer } from './playlist/reducer';
+import { createStore } from 'redux';
+import { videoReducer } from './reducers';
 
-// export default createStore(playlistReducer);
+export default createStore(videoReducer);

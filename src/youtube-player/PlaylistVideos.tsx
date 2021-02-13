@@ -1,28 +1,26 @@
 import React, { ChangeEvent } from 'react';
-import { PlaylistInfo, PlaylistVideo } from '../redux/playlist/types';
+import { connect } from 'react-redux';
+import { videoActions, VideoActionType } from '../redux/actions';
+import { PlaylistInfo, PlaylistVideo } from '../redux/types';
 import {
   VideoDownloadResult,
   YoutubeService,
 } from '../services/youtube.service';
 import { PlaylistVideoBlock } from './PlaylistVideoBlock';
 
-interface VideoListProps {
+type VideoListProps = VideoActionType & {
   playlistFolder: string;
   playlist: PlaylistInfo;
   youtubeService: YoutubeService;
-  onVideoClick: (x: PlaylistVideo) => void;
   onPlaylistUpdate: (x: PlaylistInfo) => void;
   onVideoUpdate: (x: PlaylistVideo) => void;
-}
+};
 
 interface VideoListState {
   downloading: boolean;
 }
 
-export default class PlaylistVideos extends React.Component<
-  VideoListProps,
-  VideoListState
-> {
+class PlaylistVideos extends React.Component<VideoListProps, VideoListState> {
   constructor(props: VideoListProps) {
     super(props);
     this.state = {
@@ -109,7 +107,7 @@ export default class PlaylistVideos extends React.Component<
   }
 
   render() {
-    const { playlist, onVideoClick, youtubeService } = this.props;
+    const { playlist, playVideo, youtubeService } = this.props;
     const { downloading } = this.state;
 
     const newVideos = playlist.videos
@@ -141,7 +139,7 @@ export default class PlaylistVideos extends React.Component<
               playlistVideo={v}
               youtubeService={youtubeService}
               disabled={v.disabled}
-              onClick={() => onVideoClick(v)}
+              onClick={() => playVideo(v)}
             />
           </li>
         );
@@ -179,3 +177,5 @@ export default class PlaylistVideos extends React.Component<
     );
   }
 }
+
+export default connect(null, videoActions)(PlaylistVideos);

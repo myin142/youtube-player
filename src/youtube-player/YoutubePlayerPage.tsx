@@ -2,24 +2,22 @@ import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { FaSync } from 'react-icons/fa';
 import { PlaylistService } from '../services/playlist.service';
-import { MusicPlayer } from './music-player/MusicPlayer';
+import MusicPlayer from './music-player/MusicPlayer';
 import PlaylistQueue from './PlaylistQueue';
 import { Playlists } from './Playlists';
 import { Searchbar } from './Searchbar';
 import PlaylistVideos from './PlaylistVideos';
-import { PlaylistFolderInfo, PlaylistVideo } from '../redux/playlist/types';
+import { PlaylistFolderInfo, PlaylistVideo } from '../redux/types';
 import NewPlaylist from './NewPlaylist';
 import LocalYoutubeDlService from '../services/local-youtube-dl.service';
+import Thumbnail from './Thumbnail';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface YoutubePlayerPageProps extends RouteComponentProps {}
 
 export interface YoutubePlayerPageState {
   selectedPlaylist: PlaylistFolderInfo | null;
-  playingPlaylist: PlaylistFolderInfo | null;
-  playingVideo: PlaylistVideo | null;
   loading: boolean;
-  videoChanged: boolean;
 }
 
 interface PathParam {
@@ -39,20 +37,8 @@ class YoutubePlayerPage extends React.Component<
 
     this.state = {
       selectedPlaylist: null,
-      playingPlaylist: null,
-      playingVideo: null,
       loading: false,
-      videoChanged: false,
     };
-  }
-
-  private playFromCurrentPlaylist(video: PlaylistVideo) {
-    const { selectedPlaylist, videoChanged } = this.state;
-    this.setState({
-      playingPlaylist: selectedPlaylist,
-      playingVideo: video,
-      videoChanged: !videoChanged,
-    });
   }
 
   updatePlaylistVideo(video: PlaylistVideo) {
@@ -139,15 +125,8 @@ class YoutubePlayerPage extends React.Component<
     this.setState({ loading: false });
   }
 
-  private playableVideos(): PlaylistVideo[] {
-    return (
-      this.state.playingPlaylist?.playlist.videos.filter((v) => !v.disabled) ||
-      []
-    );
-  }
-
   render() {
-    const { selectedPlaylist, playingVideo, videoChanged } = this.state;
+    const { selectedPlaylist } = this.state;
     const param = this.props.match.params as PathParam;
 
     let mainPage = null;
@@ -159,7 +138,6 @@ class YoutubePlayerPage extends React.Component<
             youtubeService={this.youtubeService}
             playlist={selectedPlaylist.playlist}
             playlistFolder={selectedPlaylist.fullPath}
-            onVideoClick={(v) => this.playFromCurrentPlaylist(v)}
             onPlaylistUpdate={(p) => this.updatePlaylistFolder({ playlist: p })}
             onVideoUpdate={(v) => this.updatePlaylistVideo(v)}
           />
@@ -183,13 +161,7 @@ class YoutubePlayerPage extends React.Component<
             playlistService={this.playlistService}
             onPlaylistSelected={(i) => this.setState({ selectedPlaylist: i })}
           />
-          {playingVideo && (
-            <img
-              src={this.youtubeService.getThumbnail(playingVideo.id)}
-              alt="Playing Video Thumbnail"
-              className="fit"
-            />
-          )}
+          <Thumbnail youtubeService={this.youtubeService} />
         </div>
         <div className="search">
           <Searchbar />
@@ -204,19 +176,10 @@ class YoutubePlayerPage extends React.Component<
 
         <div className="main">{mainPage}</div>
         <div className="queue">
-          {playingVideo && (
-            <PlaylistQueue playingVideo={playingVideo} nextQueue={[]} />
-          )}
+          <PlaylistQueue nextQueue={[]} />
         </div>
         <div className="player">
-          <MusicPlayer
-            videoChanged={videoChanged}
-            playingVideos={this.playableVideos()}
-            playingVideo={playingVideo}
-            onVideoPlay={(v) =>
-              this.setState({ playingVideo: v, videoChanged: !videoChanged })
-            }
-          />
+          <MusicPlayer playingVideos={this.playableVideos()} />
         </div>
       </div>
     );
