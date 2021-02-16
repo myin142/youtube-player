@@ -105,7 +105,7 @@ export class MusicPlayer extends React.Component<
   }
 
   private handleKeyDown(ev: KeyboardEvent) {
-    const preventEvent = ['INPUT', 'BUTTON'];
+    const preventEvent = ['INPUT'];
     if (preventEvent.includes(document.activeElement?.tagName || '')) {
       return;
     }
