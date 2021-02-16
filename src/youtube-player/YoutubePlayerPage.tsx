@@ -20,6 +20,7 @@ export interface YoutubePlayerPageState {
   playingVideo: PlaylistVideo | null;
   loading: boolean;
   videoChanged: boolean;
+  queue: number[];
 }
 
 interface PathParam {
@@ -43,6 +44,7 @@ class YoutubePlayerPage extends React.Component<
       playingVideo: null,
       loading: false,
       videoChanged: false,
+      queue: [],
     };
   }
 
@@ -147,7 +149,13 @@ class YoutubePlayerPage extends React.Component<
   }
 
   render() {
-    const { selectedPlaylist, playingVideo, videoChanged } = this.state;
+    const {
+      selectedPlaylist,
+      playingVideo,
+      videoChanged,
+      queue,
+      playingPlaylist,
+    } = this.state;
     const param = this.props.match.params as PathParam;
 
     let mainPage = null;
@@ -205,7 +213,11 @@ class YoutubePlayerPage extends React.Component<
         <div className="main">{mainPage}</div>
         <div className="queue">
           {playingVideo && (
-            <PlaylistQueue playingVideo={playingVideo} nextQueue={[]} />
+            <PlaylistQueue
+              playingVideo={playingVideo}
+              queue={queue}
+              videos={this.playableVideos()}
+            />
           )}
         </div>
         <div className="player">
@@ -213,9 +225,11 @@ class YoutubePlayerPage extends React.Component<
             videoChanged={videoChanged}
             playingVideos={this.playableVideos()}
             playingVideo={playingVideo}
+            queue={queue}
             onVideoPlay={(v) =>
               this.setState({ playingVideo: v, videoChanged: !videoChanged })
             }
+            onQueueChanged={(q) => this.setState({ queue: q })}
           />
         </div>
       </div>

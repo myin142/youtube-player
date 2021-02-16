@@ -3,14 +3,17 @@ import React from 'react';
 import { FaPause, FaPlay, FaRandom, FaStepForward } from 'react-icons/fa';
 import { PlaylistVideo } from '../../redux/playlist/types';
 import { audioController } from '../../services/music-player/audio-controller';
+import { MusicQueue } from './music-queue';
 import { PlaybackControls } from './PlaybackControls';
 import { VolumeControls } from './VolumeControls';
 
 export interface MusicPlayerProps {
+  queue: number[];
   videoChanged: boolean;
   playingVideos: PlaylistVideo[];
   playingVideo: PlaylistVideo | null;
   onVideoPlay: (v: PlaylistVideo) => void;
+  onQueueChanged: (queue: number[]) => void;
 }
 
 export interface MusicPlayerStats {
@@ -50,7 +53,11 @@ export class MusicPlayer extends React.Component<
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {
-    const { videoChanged } = this.props;
+    const { videoChanged, playingVideos } = this.props;
+    if (playingVideos.length !== prevProps.playingVideos.length) {
+      this.fillQueue([]);
+    }
+
     if (prevProps.videoChanged !== videoChanged) {
       this.play();
     }
@@ -60,38 +67,32 @@ export class MusicPlayer extends React.Component<
     this.clearListeners();
   }
 
-  private playNextVideo() {
-    const vid = this.getNextVideoToPlay();
-    if (vid) {
-      this.props.onVideoPlay(vid);
-    }
+  private fillQueue(queue: number[] = []) {
+    const { onQueueChanged, playingVideos } = this.props;
+    const { isRandom } = this.state;
+    // TODO: use music queue globally
+    const mQueue = new MusicQueue(
+      {
+        // Current workaround to prevent playing same video twice in a row
+        max_queue: playingVideos.length < 5 ? playingVideos.length : 5,
+        max_index: playingVideos.length,
+        random: isRandom,
+      },
+      queue
+    );
+    onQueueChanged(mQueue.queue);
   }
 
-  private getNextVideoToPlay(): PlaylistVideo | null {
-    const { playingVideos, playingVideo } = this.props;
-    const { isRandom } = this.state;
+  private playNextVideo() {
+    const { playingVideos, queue } = this.props;
 
-    if (playingVideos.length === 0) return null;
+    if (playingVideos.length === 0) return;
 
-    const currentIndex = playingVideos.findIndex(
-      (v) => v.id === playingVideo?.id
-    );
-    const randomVideoIdx = () =>
-      Math.floor(Math.random() * playingVideos.length);
-    const nextVideoIdx = () => {
-      let idx = currentIndex + 1;
-      if (idx >= playingVideos.length) {
-        idx = 0;
-      }
-      return idx;
-    };
-
-    let idx = currentIndex;
-    do {
-      idx = isRandom ? randomVideoIdx() : nextVideoIdx();
-    } while (idx === currentIndex && playingVideos.length > 1);
-
-    return playingVideos[idx];
+    const vid = playingVideos[queue.shift() || 0];
+    if (vid) {
+      this.props.onVideoPlay(vid);
+      this.fillQueue(queue);
+    }
   }
 
   private get volume(): number {
@@ -132,6 +133,7 @@ export class MusicPlayer extends React.Component<
   private toggleRandom() {
     const { isRandom } = this.state;
     this.setState({ isRandom: !isRandom });
+    this.fillQueue([]);
   }
 
   private toggleMusic() {
