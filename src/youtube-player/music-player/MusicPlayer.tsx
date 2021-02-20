@@ -1,11 +1,14 @@
 /* eslint-disable no-return-assign */
 import React from 'react';
-import { FaPause, FaPlay, FaRandom, FaStepForward } from 'react-icons/fa';
+import { Pause, PlayArrow, SkipNext, Shuffle } from '@material-ui/icons';
+import { Divider, IconButton } from '@material-ui/core';
+import FlexBox from '../../components/FlexBox';
 import { PlaylistVideo } from '../../redux/playlist/types';
 import { audioController } from '../../services/music-player/audio-controller';
 import { MusicQueue } from './music-queue';
 import { PlaybackControls } from './PlaybackControls';
 import { VolumeControls } from './VolumeControls';
+import IconToggle from '../../components/IconToggle';
 
 export interface MusicPlayerProps {
   queue: number[];
@@ -179,39 +182,54 @@ export class MusicPlayer extends React.Component<
   }
 
   render() {
-    const { playingVideo } = this.props;
     const { isPlaying, songDuration, volume, isRandom } = this.state;
 
     return (
-      <div>
-        {playingVideo && (
-          <div className="flex-horizontal">
-            <div className="flex-vertical">
-              <div>
-                {(isPlaying && <FaPause onClick={() => this.pause()} />) || (
-                  <FaPlay onClick={() => this.resume()} />
-                )}
-                <FaStepForward onClick={() => this.playNextVideo()} />
-              </div>
-              <div>
-                <FaRandom
-                  className={isRandom ? 'active-icon' : ''}
-                  onClick={() => this.toggleRandom()}
-                />
-              </div>
-            </div>
-            <PlaybackControls
-              isPlaying={isPlaying}
-              currentTimeFn={() => audioController.playbackTime}
-              duration={songDuration}
-            />
-            <VolumeControls
-              volume={volume}
-              onVolumeChange={(v) => (this.volume = v)}
-            />
-          </div>
-        )}
-      </div>
+      <FlexBox
+        flexDirection="row"
+        flexGrow={1}
+        style={{ gap: '3em' }}
+        paddingX="2em"
+      >
+        <div className="controls flex-vertical">
+          <FlexBox>
+            {(isPlaying && (
+              <IconButton onClick={() => this.pause()}>
+                <Pause />
+              </IconButton>
+            )) || (
+              <IconButton onClick={() => this.resume()}>
+                <PlayArrow />
+              </IconButton>
+            )}
+            <IconButton onClick={() => this.playNextVideo()}>
+              <SkipNext />
+            </IconButton>
+
+            <Divider orientation="vertical" flexItem />
+            <IconToggle
+              active={isRandom}
+              onClick={() => this.toggleRandom()}
+              title="Shuffle"
+            >
+              <Shuffle />
+            </IconToggle>
+          </FlexBox>
+        </div>
+        <div className="playback flex-vertical">
+          <PlaybackControls
+            isPlaying={isPlaying}
+            currentTimeFn={() => audioController.playbackTime}
+            duration={songDuration}
+          />
+        </div>
+        <div className="other-controls flex-vertical">
+          <VolumeControls
+            volume={volume}
+            onVolumeChange={(v) => (this.volume = v)}
+          />
+        </div>
+      </FlexBox>
     );
   }
 }

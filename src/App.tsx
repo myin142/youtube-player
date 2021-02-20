@@ -1,3 +1,4 @@
+import { createMuiTheme, MuiThemeProvider } from '@material-ui/core';
 import { ipcRenderer } from 'electron';
 import React from 'react';
 import {
@@ -12,6 +13,36 @@ import YoutubePlayerPage from './youtube-player/YoutubePlayerPage';
 interface AppState {
   redirect: string;
 }
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#2e2e2e',
+      light: '#3f3f3f',
+      // dark: '#232323',
+      // contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#b13e3e',
+    },
+    background: {
+      default: '#232323',
+    },
+  },
+  overrides: {
+    MuiIconButton: {
+      root: {
+        color: '#ffffff',
+      },
+    },
+    MuiDivider: {
+      root: {
+        backgroundColor: '#3f3f3f',
+        height: '0.1rem',
+      },
+    },
+  },
+});
 
 export default class App extends React.Component<unknown, AppState> {
   constructor(props: unknown) {
@@ -34,16 +65,18 @@ export default class App extends React.Component<unknown, AppState> {
     const defaultUrl = `/player/${encodeURIComponent(folder)}`;
 
     return (
-      <Router>
-        {redirect && <Redirect to={redirect} />}
-        <Switch>
-          <Route path="/player/:path" component={YoutubePlayerPage} />
+      <MuiThemeProvider theme={theme}>
+        <Router>
+          {redirect && <Redirect to={redirect} />}
+          <Switch>
+            <Route path="/player/:path" component={YoutubePlayerPage} />
 
-          <Route path="/">
-            <Redirect to={defaultUrl} />
-          </Route>
-        </Switch>
-      </Router>
+            <Route path="/">
+              <Redirect to={defaultUrl} />
+            </Route>
+          </Switch>
+        </Router>
+      </MuiThemeProvider>
     );
   }
 }

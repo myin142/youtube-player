@@ -1,9 +1,11 @@
-import React, { ChangeEvent } from 'react';
-import { PlaylistInfo, PlaylistVideo } from '../redux/playlist/types';
+import { IconButton, Tooltip, Typography } from '@material-ui/core';
+import { GetApp } from '@material-ui/icons';
+import React from 'react';
+import { PlaylistInfo, PlaylistVideo } from '../../redux/playlist/types';
 import {
   VideoDownloadResult,
   YoutubeService,
-} from '../services/youtube.service';
+} from '../../services/youtube.service';
 import { PlaylistVideoBlock } from './PlaylistVideoBlock';
 
 interface VideoListProps {
@@ -13,6 +15,7 @@ interface VideoListProps {
   onVideoClick: (x: PlaylistVideo) => void;
   onPlaylistUpdate: (x: PlaylistInfo) => void;
   onVideoUpdate: (x: PlaylistVideo) => void;
+  editMode: boolean;
 }
 
 interface VideoListState {
@@ -88,15 +91,6 @@ export default class PlaylistVideos extends React.Component<
     this.download(ids);
   }
 
-  private toggleVideo(
-    { target }: ChangeEvent<HTMLInputElement>,
-    video: PlaylistVideo
-  ) {
-    const { onVideoUpdate } = this.props;
-    video.disabled = !target.checked;
-    onVideoUpdate(video);
-  }
-
   private toggleAllVideos() {
     const { playlist, onPlaylistUpdate } = this.props;
     const disabled = playlist.videos.every((v) => !v.disabled);
@@ -108,8 +102,18 @@ export default class PlaylistVideos extends React.Component<
     onPlaylistUpdate(playlist);
   }
 
+  private onVideoClicked(video: PlaylistVideo) {
+    const { editMode, onVideoClick, onVideoUpdate } = this.props;
+    if (editMode) {
+      video.disabled = !video.disabled;
+      onVideoUpdate(video);
+    } else {
+      onVideoClick(video);
+    }
+  }
+
   render() {
-    const { playlist, onVideoClick, youtubeService } = this.props;
+    const { playlist, youtubeService, editMode } = this.props;
     const { downloading } = this.state;
 
     const newVideos = playlist.videos
@@ -132,16 +136,12 @@ export default class PlaylistVideos extends React.Component<
       .map((v) => {
         return (
           <li key={v.id} className="flex-horizontal">
-            <input
-              type="checkbox"
-              checked={!v.disabled}
-              onChange={(e) => this.toggleVideo(e, v)}
-            />
             <PlaylistVideoBlock
               playlistVideo={v}
               youtubeService={youtubeService}
               disabled={v.disabled}
-              onClick={() => onVideoClick(v)}
+              editing={editMode}
+              onClick={() => this.onVideoClicked(v)}
             />
           </li>
         );
@@ -150,32 +150,34 @@ export default class PlaylistVideos extends React.Component<
     const enabled = playlist.videos.every((v) => !v.disabled);
 
     return (
-      <div>
+      <>
         {downloadedVideos.length > 0 && (
           <div>
-            <h2>Downloaded Videos</h2>
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={() => this.toggleAllVideos()}
-            />
+            {editMode && (
+              <input
+                type="checkbox"
+                checked={enabled}
+                onChange={() => this.toggleAllVideos()}
+              />
+            )}
             <ul>{downloadedVideos}</ul>
           </div>
         )}
         {newVideos.length > 0 && (
           <div>
-            <h2>Not Downloaded Videos</h2>
-            <button
-              type="button"
-              onClick={() => this.downloadAll()}
-              disabled={downloading}
-            >
-              Download All
-            </button>
+            <Typography variant="h5">Not Downloaded Videos</Typography>
+            <Tooltip title="Download all">
+              <IconButton
+                onClick={() => this.downloadAll()}
+                disabled={downloading}
+              >
+                <GetApp />
+              </IconButton>
+            </Tooltip>
             <ul>{newVideos}</ul>
           </div>
         )}
-      </div>
+      </>
     );
   }
 }

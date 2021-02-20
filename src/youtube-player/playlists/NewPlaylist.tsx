@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { YoutubeService } from '../services/youtube.service';
+import { YoutubeService } from '../../services/youtube.service';
 
 interface NewPlaylistProps {
   youtubeService: YoutubeService;
@@ -37,7 +37,7 @@ export default class NewPlaylist extends React.Component<
   render() {
     const { playlistId, loading } = this.state;
     return (
-      <div>
+      <>
         <input value={playlistId} onChange={this.setPlaylistId.bind(this)} />
         <button
           type="button"
@@ -46,7 +46,7 @@ export default class NewPlaylist extends React.Component<
         >
           Create Playlist
         </button>
-      </div>
+      </>
     );
   }
 }

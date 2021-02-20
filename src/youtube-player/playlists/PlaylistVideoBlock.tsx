@@ -1,12 +1,13 @@
 import React, { MouseEventHandler } from 'react';
-import { PlaylistVideo } from '../redux/playlist/types';
-import { YoutubeService } from '../services/youtube.service';
+import { PlaylistVideo } from '../../redux/playlist/types';
+import { YoutubeService } from '../../services/youtube.service';
 
 export interface PlaylistVideoBlockProps {
   youtubeService: YoutubeService;
   playlistVideo: PlaylistVideo;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
+  editing?: boolean;
 }
 
 export function PlaylistVideoBlock({
@@ -14,15 +15,26 @@ export function PlaylistVideoBlock({
   youtubeService,
   onClick,
   disabled,
+  editing,
 }: PlaylistVideoBlockProps) {
+  let classes = 'btn-1 flex-horizontal video-block';
+  if (disabled && editing) {
+    classes += ' disabled';
+  }
+
   return (
-    <button type="button" onClick={onClick} disabled={disabled}>
+    <button
+      className={classes}
+      type="button"
+      onClick={onClick}
+      disabled={disabled && !editing}
+    >
       <img
         src={youtubeService.getThumbnail(playlistVideo.id)}
-        width="64px"
+        className="thumbnail"
         alt={playlistVideo.title}
       />
-      {playlistVideo.title}
+      <div>{playlistVideo.title}</div>
     </button>
   );
 }

@@ -1,15 +1,18 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { FaSync } from 'react-icons/fa';
+import { IconButton, Tooltip } from '@material-ui/core';
+import { Edit, Sync } from '@material-ui/icons';
 import { PlaylistService } from '../services/playlist.service';
 import { MusicPlayer } from './music-player/MusicPlayer';
-import PlaylistQueue from './PlaylistQueue';
-import { Playlists } from './Playlists';
+import PlaylistQueue from './playlists/PlaylistQueue';
+import { Playlists } from './playlists/Playlists';
 import { Searchbar } from './Searchbar';
-import PlaylistVideos from './PlaylistVideos';
+import PlaylistVideos from './playlists/PlaylistVideos';
 import { PlaylistFolderInfo, PlaylistVideo } from '../redux/playlist/types';
-import NewPlaylist from './NewPlaylist';
+import NewPlaylist from './playlists/NewPlaylist';
 import LocalYoutubeDlService from '../services/local-youtube-dl.service';
+import FlexBox from '../components/FlexBox';
+import IconToggle from '../components/IconToggle';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface YoutubePlayerPageProps extends RouteComponentProps {}
@@ -21,6 +24,7 @@ export interface YoutubePlayerPageState {
   loading: boolean;
   videoChanged: boolean;
   queue: number[];
+  editMode: boolean;
 }
 
 interface PathParam {
@@ -45,6 +49,7 @@ class YoutubePlayerPage extends React.Component<
       loading: false,
       videoChanged: false,
       queue: [],
+      editMode: false,
     };
   }
 
@@ -154,7 +159,7 @@ class YoutubePlayerPage extends React.Component<
       playingVideo,
       videoChanged,
       queue,
-      playingPlaylist,
+      editMode,
     } = this.state;
     const param = this.props.match.params as PathParam;
 
@@ -170,6 +175,7 @@ class YoutubePlayerPage extends React.Component<
             onVideoClick={(v) => this.playFromCurrentPlaylist(v)}
             onPlaylistUpdate={(p) => this.updatePlaylistFolder({ playlist: p })}
             onVideoUpdate={(v) => this.updatePlaylistVideo(v)}
+            editMode={editMode}
           />
         );
       } else {
@@ -183,44 +189,71 @@ class YoutubePlayerPage extends React.Component<
     }
 
     return (
-      <div className="grid">
-        <div className="browser">
-          <Playlists
-            selectedPlaylist={selectedPlaylist}
-            playlistFolder={decodeURIComponent(param.path)}
-            playlistService={this.playlistService}
-            onPlaylistSelected={(i) => this.setState({ selectedPlaylist: i })}
-          />
-          {playingVideo && (
-            <img
-              src={this.youtubeService.getThumbnail(playingVideo.id)}
-              alt="Playing Video Thumbnail"
-              className="fit"
-            />
-          )}
-        </div>
-        <div className="search">
-          <Searchbar />
-          {selectedPlaylist && (
-            <FaSync
-              className="pointer"
-              onClick={() => this.loadPlaylistVideos()}
-              title="Reload playlist videos"
-            />
-          )}
-        </div>
+      <>
+        <div className="container">
+          <nav className="side-panel">
+            <div className="panel scroll">
+              <Playlists
+                selectedPlaylist={selectedPlaylist}
+                playlistFolder={decodeURIComponent(param.path)}
+                playlistService={this.playlistService}
+                onPlaylistSelected={(i) =>
+                  this.setState({ selectedPlaylist: i })
+                }
+              />
+            </div>
+            {playingVideo && (
+              <img
+                src={this.youtubeService.getThumbnail(playingVideo.id)}
+                alt="Playing Video Thumbnail"
+                className="thumbnail"
+              />
+            )}
+          </nav>
+          <div className="main-container">
+            <div
+              className="flex-horizontal main-padding"
+              style={{ justifyContent: 'space-between' }}
+            >
+              <Searchbar />
 
-        <div className="main">{mainPage}</div>
-        <div className="queue">
+              <FlexBox flexShrink={1}>
+                {selectedPlaylist && (
+                  <>
+                    <Tooltip title="Reload playlist videos">
+                      <IconButton onClick={() => this.loadPlaylistVideos()}>
+                        <Sync />
+                      </IconButton>
+                    </Tooltip>
+                    <IconToggle
+                      active={editMode}
+                      onClick={() => this.setState({ editMode: !editMode })}
+                      title="Edit playlist videos"
+                    >
+                      <Edit />
+                    </IconToggle>
+                  </>
+                )}
+              </FlexBox>
+            </div>
+
+            <main className="scroll">
+              <div className="main-padding">{mainPage}</div>
+            </main>
+          </div>
           {playingVideo && (
-            <PlaylistQueue
-              playingVideo={playingVideo}
-              queue={queue}
-              videos={this.playableVideos()}
-            />
+            <aside className="side-panel">
+              <div className="panel scroll">
+                <PlaylistQueue
+                  playingVideo={playingVideo}
+                  queue={queue}
+                  videos={this.playableVideos()}
+                />
+              </div>
+            </aside>
           )}
         </div>
-        <div className="player">
+        <footer className="panel">
           <MusicPlayer
             videoChanged={videoChanged}
             playingVideos={this.playableVideos()}
@@ -231,8 +264,8 @@ class YoutubePlayerPage extends React.Component<
             }
             onQueueChanged={(q) => this.setState({ queue: q })}
           />
-        </div>
-      </div>
+        </footer>
+      </>
     );
   }
 }

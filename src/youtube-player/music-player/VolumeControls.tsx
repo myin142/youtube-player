@@ -1,10 +1,13 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import {
-  FaVolumeDown,
-  FaVolumeMute,
-  FaVolumeOff,
-  FaVolumeUp,
-} from 'react-icons/fa';
+  VolumeDown,
+  VolumeMute,
+  VolumeOff,
+  VolumeUp,
+} from '@material-ui/icons';
+import { IconButton } from '@material-ui/core';
+import FlexBox from '../../components/FlexBox';
+import YtSlider from '../../components/YtSlider';
 
 export interface VolumeControlsProps {
   volume: number;
@@ -30,12 +33,12 @@ export class VolumeControls extends React.Component<
     };
   }
 
-  private onVolumeSliderChange({ target }: ChangeEvent<HTMLInputElement>) {
-    const volume = parseInt(target.value, 10);
-    if (!Number.isNaN(volume)) {
+  private onVolumeSliderChange(volume: number | number[]) {
+    // const volume = parseInt(newValue, 10);
+    if (!Array.isArray(volume)) {
       this.emitNormalizedVolume(volume);
     } else {
-      console.warn('Volume not a number');
+      console.warn('Volume not a number', volume);
     }
   }
 
@@ -75,31 +78,44 @@ export class VolumeControls extends React.Component<
     const { volume } = this.props;
     const { muted } = this.state;
 
-    let volumeIcon = <FaVolumeUp onClick={() => this.mute()} />;
+    let volumeIcon = (
+      <IconButton onClick={() => this.mute()}>
+        <VolumeUp />
+      </IconButton>
+    );
 
     if (muted) {
-      volumeIcon = <FaVolumeMute onClick={() => this.unmute()} />;
+      volumeIcon = (
+        <IconButton onClick={() => this.unmute()}>
+          <VolumeMute />
+        </IconButton>
+      );
     } else if (volume === 0) {
       volumeIcon = (
-        <FaVolumeOff
+        <IconButton
           onClick={() => this.emitNormalizedVolume(VolumeControls.MAX_VOLUME)}
-        />
+        >
+          <VolumeOff />
+        </IconButton>
       );
     } else if (volume < 0.5) {
-      volumeIcon = <FaVolumeDown onClick={() => this.mute()} />;
+      volumeIcon = (
+        <IconButton onClick={() => this.mute()}>
+          <VolumeDown />
+        </IconButton>
+      );
     }
 
     return (
-      <div>
+      <FlexBox flexDirection="row">
         {volumeIcon}
-        <input
-          type="range"
-          min="0"
-          max="100"
+        <YtSlider
           value={this.fromNormalizedVolume(volume)}
-          onChange={this.onVolumeSliderChange.bind(this)}
+          min={0}
+          max={100}
+          onChange={(e, v) => this.onVolumeSliderChange(v)}
         />
-      </div>
+      </FlexBox>
     );
   }
 }

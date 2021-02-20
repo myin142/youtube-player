@@ -6,6 +6,7 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'react/destructuring-assignment': 'off',
     'react/sort-comp': 'off',
+    'react/no-array-index-key': 'off',
     'class-methods-use-this': 'off',
     'no-plusplus': 'off',
   },

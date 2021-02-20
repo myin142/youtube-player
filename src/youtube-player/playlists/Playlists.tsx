@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import * as fs from 'fs-extra';
-import { PlaylistFolderInfo } from '../redux/playlist/types';
-import { PlaylistService } from '../services/playlist.service';
+import { PlaylistFolderInfo } from '../../redux/playlist/types';
+import { PlaylistService } from '../../services/playlist.service';
 
 export interface PlaylistsProps {
   playlistFolder: string;
@@ -43,7 +43,9 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
     }
   }
 
-  private setCreatePlaylistName({ target }: ChangeEvent<HTMLInputElement>) {
+  private setCreatePlaylistName({
+    target,
+  }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     this.setState({ createPlaylistName: target.value });
   }
 
@@ -71,6 +73,8 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
   private async createPlaylist() {
     const { playlistFolder } = this.props;
     let folder = playlistFolder;
+    if (folder === '') return;
+
     if (!folder.endsWith('/')) {
       folder += '/';
     }
@@ -103,6 +107,7 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
       return (
         <li key={i.fullPath}>
           <button
+            className="btn-2"
             type="button"
             onClick={() => onPlaylistSelected(i)}
             onKeyPress={() => onPlaylistSelected(i)}
@@ -119,10 +124,11 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
     });
 
     return (
-      <div>
+      <div className="flex-vertical" style={{ gap: '1em' }}>
         <div>{playlistFolder}</div>
         <button
           type="button"
+          className="btn-2"
           onClick={() =>
             this.setState((e) => ({
               showCreatePlaylist: !e.showCreatePlaylist,

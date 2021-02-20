@@ -1,4 +1,7 @@
+import { Box } from '@material-ui/core';
 import React from 'react';
+import FlexBox from '../../components/FlexBox';
+import YtSlider from '../../components/YtSlider';
 
 export interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -59,13 +62,13 @@ export class PlaybackControls extends React.Component<
     const time = currentTimeFn();
 
     return (
-      <div>
+      <FlexBox flexDirection="row">
         <span>
           {this.playbackToMinuteString(time > duration ? duration : time)}
         </span>
-        <input type="range" min="0" max={duration} value={time} readOnly />
+        <YtSlider min={0} max={duration} value={time} />
         <span>{this.playbackToMinuteString(duration)}</span>
-      </div>
+      </FlexBox>
     );
   }
 }
