@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
-import { PlaylistFolderInfo } from '../redux/playlist/types';
+import { PlaylistFolderInfo } from '../youtube-player/types';
 
 export class PlaylistService extends EventEmitter {
   private static PLAYLIST_INFO_FILE = '.yt-plyr-info';

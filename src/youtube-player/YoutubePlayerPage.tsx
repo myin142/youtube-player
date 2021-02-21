@@ -8,7 +8,7 @@ import PlaylistQueue from './playlists/PlaylistQueue';
 import { Playlists } from './playlists/Playlists';
 import { Searchbar } from './Searchbar';
 import PlaylistVideos from './playlists/PlaylistVideos';
-import { PlaylistFolderInfo, PlaylistVideo } from '../redux/playlist/types';
+import { PlaylistFolderInfo, PlaylistVideo } from './types';
 import NewPlaylist from './playlists/NewPlaylist';
 import LocalYoutubeDlService from '../services/local-youtube-dl.service';
 import FlexBox from '../components/FlexBox';

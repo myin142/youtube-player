@@ -1,10 +1,11 @@
 /* eslint-disable no-return-assign */
-import React from 'react';
+import React, { RefObject } from 'react';
 import { Pause, PlayArrow, SkipNext, Shuffle } from '@material-ui/icons';
 import { Divider, IconButton } from '@material-ui/core';
+import ReactHowler from 'react-howler';
+import { clamp } from 'lodash';
 import FlexBox from '../../components/FlexBox';
-import { PlaylistVideo } from '../../redux/playlist/types';
-import { audioController } from '../../services/music-player/audio-controller';
+import { PlaylistVideo } from '../types';
 import { MusicQueue } from './music-queue';
 import { PlaybackControls } from './PlaybackControls';
 import { VolumeControls } from './VolumeControls';
@@ -32,14 +33,17 @@ export class MusicPlayer extends React.Component<
 > {
   private static VOLUME_STEPS = 0.1;
 
-  private readonly audioController = audioController;
+  private readonly player: RefObject<ReactHowler>;
 
   constructor(props: MusicPlayerProps) {
     super(props);
+
+    this.player = React.createRef();
+
     this.state = {
-      isPlaying: this.audioController.isPlaying,
-      songDuration: this.audioController.songDuration,
-      volume: this.audioController.volume,
+      isPlaying: false,
+      songDuration: 0,
+      volume: 0.5,
       isRandom: true,
     };
 
@@ -49,10 +53,6 @@ export class MusicPlayer extends React.Component<
   componentDidMount() {
     this.clearListeners();
     document.addEventListener('keydown', this.handleKeyDown);
-
-    this.audioController.addListener('songFinished', () =>
-      this.playNextVideo()
-    );
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {
@@ -103,8 +103,7 @@ export class MusicPlayer extends React.Component<
   }
 
   private set volume(vol: number) {
-    this.audioController.volume = vol;
-    this.setState({ volume: this.audioController.volume });
+    this.setState({ volume: clamp(vol, 0, 1) });
   }
 
   private handleKeyDown(ev: KeyboardEvent) {
@@ -128,8 +127,6 @@ export class MusicPlayer extends React.Component<
   }
 
   private clearListeners() {
-    // Right now this class should be the only listener
-    this.audioController.removeAllListeners('songFinished');
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
@@ -153,14 +150,10 @@ export class MusicPlayer extends React.Component<
   }
 
   private async play(video = this.props.playingVideo) {
-    const { volume } = this.state;
-
     if (video && video.fileName) {
-      await this.audioController.play(video.fileName);
-      this.audioController.volume = volume;
+      this.player.current?.seek(0);
       this.setState({
         isPlaying: true,
-        songDuration: this.audioController.songDuration,
       });
     } else {
       console.warn('Cannot play not downloaded video');
@@ -168,20 +161,23 @@ export class MusicPlayer extends React.Component<
   }
 
   private async resume() {
-    this.audioController.resume();
     this.setState({
       isPlaying: true,
     });
   }
 
   private async pause() {
-    this.audioController.pause();
     this.setState({
       isPlaying: false,
     });
   }
 
+  private setSongDuration() {
+    this.setState({ songDuration: this.player.current?.duration() || 0 });
+  }
+
   render() {
+    const { playingVideo } = this.props;
     const { isPlaying, songDuration, volume, isRandom } = this.state;
 
     return (
@@ -191,6 +187,16 @@ export class MusicPlayer extends React.Component<
         style={{ gap: '3em' }}
         paddingX="2em"
       >
+        {playingVideo && playingVideo.fileName && (
+          <ReactHowler
+            src={playingVideo.fileName}
+            volume={volume}
+            playing={isPlaying}
+            onLoad={() => this.setSongDuration()}
+            onEnd={() => this.playNextVideo()}
+            ref={this.player}
+          />
+        )}
         <div className="controls flex-vertical">
           <FlexBox>
             {(isPlaying && (
@@ -219,7 +225,7 @@ export class MusicPlayer extends React.Component<
         <div className="playback flex-vertical">
           <PlaybackControls
             isPlaying={isPlaying}
-            currentTimeFn={() => audioController.playbackTime}
+            currentTimeFn={() => this.player.current?.seek() || 0}
             duration={songDuration}
           />
         </div>

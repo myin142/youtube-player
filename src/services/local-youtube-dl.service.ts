@@ -5,7 +5,6 @@ import * as fs from 'fs-extra';
 import {
   VideoDownloadOptions,
   VideoDownloadResult,
-  VideoInfo,
   YoutubePlaylistInfo,
   YoutubeService,
 } from './youtube.service';

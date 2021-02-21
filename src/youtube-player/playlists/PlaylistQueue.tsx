@@ -6,7 +6,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import React from 'react';
-import { PlaylistVideo } from '../../redux/playlist/types';
+import { PlaylistVideo } from '../types';
 
 interface PlaylistQueueProps {
   playingVideo: PlaylistVideo;

@@ -1,7 +1,7 @@
 import { IconButton, Tooltip, Typography } from '@material-ui/core';
 import { GetApp } from '@material-ui/icons';
 import React from 'react';
-import { PlaylistInfo, PlaylistVideo } from '../../redux/playlist/types';
+import { PlaylistInfo, PlaylistVideo } from '../types';
 import {
   VideoDownloadResult,
   YoutubeService,
