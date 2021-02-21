@@ -76,6 +76,7 @@ export class AudioController extends EventEmitter {
 
   private playFromBuffer(buffer: AudioBuffer) {
     this.stop(false);
+    this.resume();
     this.buffer = buffer;
     this.initSource();
     this.songStartingTime = this.context.currentTime;
