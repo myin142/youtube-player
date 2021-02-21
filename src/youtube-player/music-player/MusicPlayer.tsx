@@ -3,7 +3,7 @@ import React, { RefObject } from 'react';
 import { Pause, PlayArrow, SkipNext, Shuffle } from '@material-ui/icons';
 import { Divider, IconButton } from '@material-ui/core';
 import ReactHowler from 'react-howler';
-import { clamp } from 'lodash';
+import { clamp, isPlainObject } from 'lodash';
 import FlexBox from '../../components/FlexBox';
 import { PlaylistVideo } from '../types';
 import { MusicQueue } from './music-queue';
@@ -25,6 +25,7 @@ export interface MusicPlayerStats {
   songDuration: number;
   volume: number;
   isRandom: boolean;
+  wasPlaying: boolean;
 }
 
 export class MusicPlayer extends React.Component<
@@ -45,6 +46,7 @@ export class MusicPlayer extends React.Component<
       songDuration: 0,
       volume: 0.5,
       isRandom: true,
+      wasPlaying: false,
     };
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -176,6 +178,20 @@ export class MusicPlayer extends React.Component<
     this.setState({ songDuration: this.player.current?.duration() || 0 });
   }
 
+  private seek(value: number) {
+    const wasPlaying = this.state.isPlaying;
+    if (wasPlaying) {
+      this.setState({ isPlaying: false, wasPlaying: true });
+    }
+    this.player.current?.seek(value);
+  }
+
+  private onSeekEnd() {
+    if (this.state.wasPlaying) {
+      this.resume();
+    }
+  }
+
   render() {
     const { playingVideo } = this.props;
     const { isPlaying, songDuration, volume, isRandom } = this.state;
@@ -227,6 +243,8 @@ export class MusicPlayer extends React.Component<
             isPlaying={isPlaying}
             currentTimeFn={() => this.player.current?.seek() || 0}
             duration={songDuration}
+            onSeek={(v) => this.seek(v)}
+            onSeekEnd={() => this.onSeekEnd()}
           />
         </div>
         <div className="other-controls flex-vertical">
