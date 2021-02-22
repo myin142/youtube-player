@@ -24,6 +24,7 @@ export interface YoutubePlayerPageState {
   loading: boolean;
   videoChanged: boolean;
   queue: number[];
+  dirtyQueue: boolean;
   editMode: boolean;
 }
 
@@ -50,15 +51,17 @@ class YoutubePlayerPage extends React.Component<
       videoChanged: false,
       queue: [],
       editMode: false,
+      dirtyQueue: false,
     };
   }
 
   private playFromCurrentPlaylist(video: PlaylistVideo) {
-    const { selectedPlaylist, videoChanged } = this.state;
+    const { selectedPlaylist, videoChanged, dirtyQueue } = this.state;
     this.setState({
       playingPlaylist: selectedPlaylist,
       playingVideo: video,
       videoChanged: !videoChanged,
+      dirtyQueue: !dirtyQueue,
     });
   }
 
@@ -160,6 +163,7 @@ class YoutubePlayerPage extends React.Component<
       videoChanged,
       queue,
       editMode,
+      dirtyQueue,
     } = this.state;
     const param = this.props.match.params as PathParam;
 
@@ -256,6 +260,7 @@ class YoutubePlayerPage extends React.Component<
         <footer className="panel">
           <MusicPlayer
             videoChanged={videoChanged}
+            dirtyQueue={dirtyQueue}
             playingVideos={this.playableVideos()}
             playingVideo={playingVideo}
             queue={queue}

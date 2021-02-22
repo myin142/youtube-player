@@ -7,6 +7,20 @@ describe('MusicQueue', () => {
       expect(queue.queue).toEqual([0, 1, 2, 3, 4, 0, 1, 2]);
     });
 
+    it('Fill up ordered start queue', () => {
+      const queue = new MusicQueue({ max_queue: 8, max_index: 5 }, [2]);
+      expect(queue.queue).toEqual([2, 3, 4, 0, 1, 2, 3, 4]);
+    });
+
+    it('Fill up ordered exclude queue', () => {
+      const queue = new MusicQueue({
+        max_queue: 8,
+        max_index: 5,
+        exclude: [0, 2, 4],
+      });
+      expect(queue.queue).toEqual([1, 3, 1, 3, 1, 3, 1, 3]);
+    });
+
     it('Fill up random queue', () => {
       const queue = new MusicQueue({
         max_queue: 5,

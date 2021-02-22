@@ -3,7 +3,7 @@ import React, { RefObject } from 'react';
 import { Pause, PlayArrow, SkipNext, Shuffle } from '@material-ui/icons';
 import { Divider, IconButton } from '@material-ui/core';
 import ReactHowler from 'react-howler';
-import { clamp, isPlainObject } from 'lodash';
+import { clamp } from 'lodash';
 import FlexBox from '../../components/FlexBox';
 import { PlaylistVideo } from '../types';
 import { MusicQueue } from './music-queue';
@@ -18,6 +18,7 @@ export interface MusicPlayerProps {
   playingVideo: PlaylistVideo | null;
   onVideoPlay: (v: PlaylistVideo) => void;
   onQueueChanged: (queue: number[]) => void;
+  dirtyQueue: boolean;
 }
 
 export interface MusicPlayerStats {
@@ -58,8 +59,11 @@ export class MusicPlayer extends React.Component<
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {
-    const { videoChanged, playingVideos } = this.props;
-    if (playingVideos.length !== prevProps.playingVideos.length) {
+    const { videoChanged, playingVideos, dirtyQueue } = this.props;
+    if (
+      playingVideos.length !== prevProps.playingVideos.length ||
+      prevProps.dirtyQueue !== dirtyQueue
+    ) {
       this.fillQueue([]);
     }
 
@@ -72,20 +76,40 @@ export class MusicPlayer extends React.Component<
     this.clearListeners();
   }
 
-  private fillQueue(queue: number[] = []) {
+  private get currentIndex(): number {
+    const { playingVideo, playingVideos } = this.props;
+    const currentIndex = playingVideos.findIndex(
+      (v) => v.id === playingVideo?.id
+    );
+
+    return currentIndex;
+  }
+
+  private fillQueue(queue: number[] = [], random = this.state.isRandom) {
     const { onQueueChanged, playingVideos } = this.props;
-    const { isRandom } = this.state;
+
+    const currentQueue = [...queue];
+    if (this.currentIndex !== -1) {
+      currentQueue.unshift(this.currentIndex);
+    }
+
     // TODO: use music queue globally
     const mQueue = new MusicQueue(
       {
         // Current workaround to prevent playing same video twice in a row
         max_queue: playingVideos.length < 5 ? playingVideos.length : 5,
         max_index: playingVideos.length,
-        random: isRandom,
+        random,
       },
-      queue
+      currentQueue
     );
-    onQueueChanged(mQueue.queue);
+
+    const resultQueue = [...mQueue.queue];
+    if (this.currentIndex !== -1) {
+      resultQueue.shift();
+    }
+
+    onQueueChanged(resultQueue);
   }
 
   private playNextVideo() {
@@ -135,7 +159,7 @@ export class MusicPlayer extends React.Component<
   private toggleRandom() {
     const { isRandom } = this.state;
     this.setState({ isRandom: !isRandom });
-    this.fillQueue([]);
+    this.fillQueue([], !isRandom);
   }
 
   private toggleMusic() {
