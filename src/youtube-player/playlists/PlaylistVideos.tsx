@@ -1,7 +1,7 @@
 import { IconButton, Tooltip, Typography } from '@material-ui/core';
 import { GetApp } from '@material-ui/icons';
 import React from 'react';
-import { PlaylistInfo, PlaylistVideo } from '../types';
+import { PlaylistFolderInfo, PlaylistVideo } from '../types';
 import {
   VideoDownloadResult,
   YoutubeService,
@@ -9,11 +9,10 @@ import {
 import { PlaylistVideoBlock } from './PlaylistVideoBlock';
 
 interface VideoListProps {
-  playlistFolder: string;
-  playlist: PlaylistInfo;
+  playlist: PlaylistFolderInfo;
   youtubeService: YoutubeService;
   onVideoClick: (x: PlaylistVideo) => void;
-  onPlaylistUpdate: (x: PlaylistInfo) => void;
+  onPlaylistUpdate: (x: PlaylistFolderInfo) => void;
   onVideoUpdate: (x: PlaylistVideo) => void;
   editMode: boolean;
 }
@@ -35,12 +34,7 @@ export default class PlaylistVideos extends React.Component<
 
   async download(ids: string[]) {
     const { downloading } = this.state;
-    const {
-      onPlaylistUpdate,
-      youtubeService,
-      playlistFolder,
-      playlist,
-    } = this.props;
+    const { onPlaylistUpdate, youtubeService, playlist } = this.props;
     if (downloading) {
       console.log('Already downloading something');
       return;
@@ -52,7 +46,7 @@ export default class PlaylistVideos extends React.Component<
         .map(async (id) => {
           return youtubeService.downloadVideo({
             id,
-            location: playlistFolder,
+            location: playlist.fullPath,
           });
         })
         .filter((x) => !!x)
@@ -66,12 +60,12 @@ export default class PlaylistVideos extends React.Component<
       console.log('Failed to download', failedDownload);
     }
 
-    const updatedVideos: PlaylistVideo[] = playlist.videos.map((v) => {
+    const updatedVideos: PlaylistVideo[] = playlist.playlist.videos.map((v) => {
       const videoResult = result.find((r) => r.id === v.id);
       if (videoResult) {
         return {
           ...v,
-          fileName: `${playlistFolder}/${videoResult.name}`,
+          fileName: `${playlist.fullPath}/${videoResult.name}`,
         };
       }
       return v;
@@ -79,7 +73,10 @@ export default class PlaylistVideos extends React.Component<
 
     onPlaylistUpdate({
       ...playlist,
-      videos: updatedVideos,
+      playlist: {
+        ...playlist.playlist,
+        videos: updatedVideos,
+      },
     });
 
     this.setState({ downloading: false });
@@ -87,15 +84,15 @@ export default class PlaylistVideos extends React.Component<
 
   private downloadAll() {
     const { playlist } = this.props;
-    const ids = playlist.videos.map((v) => v.id);
+    const ids = playlist.playlist.videos.map((v) => v.id);
     this.download(ids);
   }
 
   private toggleAllVideos() {
     const { playlist, onPlaylistUpdate } = this.props;
-    const disabled = playlist.videos.every((v) => !v.disabled);
+    const disabled = playlist.playlist.videos.every((v) => !v.disabled);
 
-    playlist.videos.forEach((v) => {
+    playlist.playlist.videos.forEach((v) => {
       v.disabled = disabled;
     });
 
@@ -116,7 +113,7 @@ export default class PlaylistVideos extends React.Component<
     const { playlist, youtubeService, editMode } = this.props;
     const { downloading } = this.state;
 
-    const newVideos = playlist.videos
+    const newVideos = playlist.playlist.videos
       .filter((v) => !v.fileName)
       .map((v) => {
         return (
@@ -131,7 +128,7 @@ export default class PlaylistVideos extends React.Component<
         );
       });
 
-    const downloadedVideos = playlist.videos
+    const downloadedVideos = playlist.playlist.videos
       .filter((v) => !!v.fileName)
       .map((v) => {
         return (
@@ -147,7 +144,7 @@ export default class PlaylistVideos extends React.Component<
         );
       });
 
-    const enabled = playlist.videos.every((v) => !v.disabled);
+    const enabled = playlist.playlist.videos.every((v) => !v.disabled);
 
     return (
       <>

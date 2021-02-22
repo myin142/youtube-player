@@ -1,9 +1,11 @@
 import React, { ChangeEvent } from 'react';
 import { YoutubeService } from '../../services/youtube.service';
+import { PlaylistFolderInfo } from '../types';
 
 interface NewPlaylistProps {
+  playlist: PlaylistFolderInfo;
   youtubeService: YoutubeService;
-  onNewPlaylist: (id: string) => void;
+  onNewPlaylist: (plalist: PlaylistFolderInfo) => void;
 }
 
 interface NewPlaylistState {
@@ -24,10 +26,16 @@ export default class NewPlaylist extends React.Component<
   }
 
   private async onCreatePlaylist() {
-    const { onNewPlaylist } = this.props;
+    const { onNewPlaylist, playlist } = this.props;
     const { playlistId } = this.state;
     this.setState({ loading: true });
-    onNewPlaylist(playlistId);
+    onNewPlaylist({
+      ...playlist,
+      playlist: {
+        ...playlist.playlist,
+        playlistId,
+      },
+    });
   }
 
   private setPlaylistId({ target }: ChangeEvent<HTMLInputElement>) {

@@ -95,15 +95,15 @@ class YoutubePlayerPage extends React.Component<
     }
   }
 
-  private async loadPlaylistVideos(
-    playlistId = this.state.selectedPlaylist?.playlist?.playlistId
-  ) {
+  private async loadPlaylistVideos(playlist = this.state.selectedPlaylist) {
+    const playlistId = playlist?.playlist.playlistId;
+    const selectedPlaylist = playlist;
     if (!playlistId) {
       console.log('Cannot load playlist videos without id');
       return;
     }
 
-    const { loading, selectedPlaylist } = this.state;
+    const { loading } = this.state;
     if (loading) {
       console.log('Already loading something');
       return;
@@ -138,7 +138,9 @@ class YoutubePlayerPage extends React.Component<
       });
 
       this.updatePlaylistFolder({
+        ...selectedPlaylist,
         playlist: {
+          ...selectedPlaylist?.playlist,
           playlistId,
           videos: mergedVideos,
           title: info.title,
@@ -174,10 +176,9 @@ class YoutubePlayerPage extends React.Component<
         mainPage = (
           <PlaylistVideos
             youtubeService={this.youtubeService}
-            playlist={selectedPlaylist.playlist}
-            playlistFolder={selectedPlaylist.fullPath}
+            playlist={selectedPlaylist}
             onVideoClick={(v) => this.playFromCurrentPlaylist(v)}
-            onPlaylistUpdate={(p) => this.updatePlaylistFolder({ playlist: p })}
+            onPlaylistUpdate={(p) => this.updatePlaylistFolder(p)}
             onVideoUpdate={(v) => this.updatePlaylistVideo(v)}
             editMode={editMode}
           />
@@ -185,6 +186,7 @@ class YoutubePlayerPage extends React.Component<
       } else {
         mainPage = (
           <NewPlaylist
+            playlist={selectedPlaylist}
             youtubeService={this.youtubeService}
             onNewPlaylist={(i) => this.loadPlaylistVideos(i)}
           />
