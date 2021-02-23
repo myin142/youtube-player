@@ -1,10 +1,15 @@
 import {
+  createStyles,
   Divider,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
+  makeStyles,
+  Theme,
   Typography,
 } from '@material-ui/core';
+import { VolumeUp } from '@material-ui/icons';
 import React from 'react';
 import { PlaylistVideo } from '../types';
 
@@ -14,11 +19,26 @@ interface PlaylistQueueProps {
   queue: number[];
 }
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    iconItem: {
+      minWidth: 0,
+      position: 'relative',
+      left: '-0.5em',
+    },
+    icon: {
+      color: theme.palette.secondary.main,
+    },
+  })
+);
+
 export default function PlaylistQueue({
   playingVideo,
   queue,
   videos,
 }: PlaylistQueueProps) {
+  const styles = useStyles();
+
   const currentIndex = videos.findIndex((v) => v.id === playingVideo.id);
 
   const nextQueue = [...queue];
@@ -32,6 +52,11 @@ export default function PlaylistQueue({
       return (
         <>
           <ListItem key={i}>
+            {i === 0 && (
+              <ListItemIcon className={styles.iconItem}>
+                <VolumeUp className={styles.icon} />
+              </ListItemIcon>
+            )}
             <ListItemText>{videos[v].title}</ListItemText>
           </ListItem>
           <Divider component="li" />
@@ -44,7 +69,7 @@ export default function PlaylistQueue({
       {queueItems.length > 0 && (
         <div>
           <Typography variant="h5" gutterBottom>
-            Next in queue
+            Queue
           </Typography>
           <List dense>{queueItems}</List>
         </div>

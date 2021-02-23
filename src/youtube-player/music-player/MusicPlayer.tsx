@@ -93,11 +93,14 @@ export class MusicPlayer extends React.Component<
       currentQueue.unshift(this.currentIndex);
     }
 
+    const maxQueue = 10;
+
     // TODO: use music queue globally
     const mQueue = new MusicQueue(
       {
         // Current workaround to prevent playing same video twice in a row
-        max_queue: playingVideos.length < 5 ? playingVideos.length : 5,
+        max_queue:
+          playingVideos.length < maxQueue ? playingVideos.length : maxQueue,
         max_index: playingVideos.length,
         random,
       },
