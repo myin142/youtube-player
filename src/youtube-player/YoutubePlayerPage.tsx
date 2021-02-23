@@ -1,18 +1,12 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { IconButton, Tooltip } from '@material-ui/core';
-import { Edit, Sync } from '@material-ui/icons';
 import { PlaylistService } from '../services/playlist.service';
 import { MusicPlayer } from './music-player/MusicPlayer';
 import PlaylistQueue from './playlists/PlaylistQueue';
 import { Playlists } from './playlists/Playlists';
-import { Searchbar } from './Searchbar';
-import PlaylistVideos from './playlists/PlaylistVideos';
 import { PlaylistFolderInfo, PlaylistVideo } from './types';
-import NewPlaylist from './playlists/NewPlaylist';
 import LocalYoutubeDlService from '../services/local-youtube-dl.service';
-import FlexBox from '../components/FlexBox';
-import IconToggle from '../components/IconToggle';
+import { MainPanel } from './MainPanel';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface YoutubePlayerPageProps extends RouteComponentProps {}
@@ -25,7 +19,6 @@ export interface YoutubePlayerPageState {
   videoChanged: boolean;
   queue: number[];
   dirtyQueue: boolean;
-  editMode: boolean;
 }
 
 interface PathParam {
@@ -50,7 +43,6 @@ class YoutubePlayerPage extends React.Component<
       loading: false,
       videoChanged: false,
       queue: [],
-      editMode: false,
       dirtyQueue: false,
     };
   }
@@ -97,7 +89,7 @@ class YoutubePlayerPage extends React.Component<
 
   private async loadPlaylistVideos(playlist = this.state.selectedPlaylist) {
     const playlistId = playlist?.playlist.playlistId;
-    const selectedPlaylist = playlist;
+    const selectedPlaylist = playlist || this.state.selectedPlaylist;
     if (!playlistId) {
       console.log('Cannot load playlist videos without id');
       return;
@@ -164,35 +156,9 @@ class YoutubePlayerPage extends React.Component<
       playingVideo,
       videoChanged,
       queue,
-      editMode,
       dirtyQueue,
     } = this.state;
     const param = this.props.match.params as PathParam;
-
-    let mainPage = null;
-
-    if (selectedPlaylist) {
-      if (selectedPlaylist.playlist?.playlistId) {
-        mainPage = (
-          <PlaylistVideos
-            youtubeService={this.youtubeService}
-            playlist={selectedPlaylist}
-            onVideoClick={(v) => this.playFromCurrentPlaylist(v)}
-            onPlaylistUpdate={(p) => this.updatePlaylistFolder(p)}
-            onVideoUpdate={(v) => this.updatePlaylistVideo(v)}
-            editMode={editMode}
-          />
-        );
-      } else {
-        mainPage = (
-          <NewPlaylist
-            playlist={selectedPlaylist}
-            youtubeService={this.youtubeService}
-            onNewPlaylist={(i) => this.loadPlaylistVideos(i)}
-          />
-        );
-      }
-    }
 
     return (
       <>
@@ -217,35 +183,16 @@ class YoutubePlayerPage extends React.Component<
             )}
           </nav>
           <div className="main-container">
-            <div
-              className="flex-horizontal main-padding"
-              style={{ justifyContent: 'space-between' }}
-            >
-              <Searchbar />
-
-              <FlexBox flexShrink={1}>
-                {selectedPlaylist && (
-                  <>
-                    <Tooltip title="Reload playlist videos">
-                      <IconButton onClick={() => this.loadPlaylistVideos()}>
-                        <Sync />
-                      </IconButton>
-                    </Tooltip>
-                    <IconToggle
-                      active={editMode}
-                      onClick={() => this.setState({ editMode: !editMode })}
-                      title="Edit playlist videos"
-                    >
-                      <Edit />
-                    </IconToggle>
-                  </>
-                )}
-              </FlexBox>
-            </div>
-
-            <main className="scroll">
-              <div className="main-padding">{mainPage}</div>
-            </main>
+            {selectedPlaylist && (
+              <MainPanel
+                youtubeService={this.youtubeService}
+                selectedPlaylist={selectedPlaylist}
+                onPlay={(v) => this.playFromCurrentPlaylist(v)}
+                onReload={(p) => this.loadPlaylistVideos(p)}
+                onUpdateFolder={(p) => this.updatePlaylistFolder(p)}
+                onUpdateVideo={(v) => this.updatePlaylistVideo(v)}
+              />
+            )}
           </div>
           {playingVideo && (
             <aside className="side-panel">

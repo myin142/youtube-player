@@ -82,6 +82,10 @@ button:not([disabled]) {
   flex-direction: column;
 }
 
+.gap {
+  gap: 1em;
+}
+
 .side-panel {
   flex-basis: 15rem;
   flex-shrink: 1;

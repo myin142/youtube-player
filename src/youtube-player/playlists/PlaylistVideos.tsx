@@ -1,4 +1,10 @@
-import { IconButton, Tooltip, Typography } from '@material-ui/core';
+import {
+  Checkbox,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { GetApp } from '@material-ui/icons';
 import React from 'react';
 import { PlaylistFolderInfo, PlaylistVideo } from '../types';
@@ -7,14 +13,17 @@ import {
   YoutubeService,
 } from '../../services/youtube.service';
 import { PlaylistVideoBlock } from './PlaylistVideoBlock';
+import FlexBox from '../../components/FlexBox';
+import InputField from '../../components/InputField';
 
 interface VideoListProps {
   playlist: PlaylistFolderInfo;
   youtubeService: YoutubeService;
   onVideoClick: (x: PlaylistVideo) => void;
   onPlaylistUpdate: (x: PlaylistFolderInfo) => void;
+  onPlaylistIdChange: (id: string) => void;
   onVideoUpdate: (x: PlaylistVideo) => void;
-  editMode: boolean;
+  editPlaylist: PlaylistFolderInfo | null;
 }
 
 interface VideoListState {
@@ -100,8 +109,8 @@ export default class PlaylistVideos extends React.Component<
   }
 
   private onVideoClicked(video: PlaylistVideo) {
-    const { editMode, onVideoClick, onVideoUpdate } = this.props;
-    if (editMode) {
+    const { editPlaylist, onVideoClick, onVideoUpdate } = this.props;
+    if (editPlaylist) {
       video.disabled = !video.disabled;
       onVideoUpdate(video);
     } else {
@@ -109,9 +118,16 @@ export default class PlaylistVideos extends React.Component<
     }
   }
 
+  private onPlaylistIdChange({
+    target,
+  }: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    this.props.onPlaylistIdChange(target.value);
+  }
+
   render() {
-    const { playlist, youtubeService, editMode } = this.props;
+    const { playlist, youtubeService, editPlaylist } = this.props;
     const { downloading } = this.state;
+    const editMode = !!editPlaylist;
 
     const newVideos = playlist.playlist.videos
       .filter((v) => !v.fileName)
@@ -148,18 +164,22 @@ export default class PlaylistVideos extends React.Component<
 
     return (
       <>
-        {downloadedVideos.length > 0 && (
-          <div>
-            {editMode && (
-              <input
-                type="checkbox"
+        <div className="flex-vertical gap">
+          {editPlaylist && (
+            <FlexBox style={{ justifyContent: 'flex-start' }}>
+              <Checkbox
                 checked={enabled}
                 onChange={() => this.toggleAllVideos()}
               />
-            )}
-            <ul>{downloadedVideos}</ul>
-          </div>
-        )}
+              <InputField
+                placeholder="Playlist Id"
+                value={editPlaylist.playlist.playlistId}
+                onChange={(e) => this.onPlaylistIdChange(e)}
+              />
+            </FlexBox>
+          )}
+          {downloadedVideos.length > 0 && <ul>{downloadedVideos}</ul>}
+        </div>
         {newVideos.length > 0 && (
           <div>
             <Typography variant="h5">Not Downloaded Videos</Typography>
