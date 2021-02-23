@@ -28,10 +28,10 @@ export default function PlaylistQueue({
 
   const queueItems = nextQueue
     .filter((i) => i >= 0 && i < videos.length)
-    .map((v) => {
+    .map((v, i) => {
       return (
         <>
-          <ListItem key={videos[v].id}>
+          <ListItem key={i}>
             <ListItemText>{videos[v].title}</ListItemText>
           </ListItem>
           <Divider component="li" />
