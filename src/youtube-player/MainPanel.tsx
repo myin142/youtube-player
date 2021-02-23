@@ -16,7 +16,6 @@ interface MainPanelProps {
   onReload: (p?: PlaylistFolderInfo) => void;
   onPlay: (v: PlaylistVideo) => void;
   onUpdateFolder: (f: PlaylistFolderInfo) => void;
-  onUpdateVideo: (v: PlaylistVideo) => void;
 }
 
 interface MainPanelState {
@@ -36,7 +35,21 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     const { editPlaylist } = this.state;
     if (editPlaylist && editPlaylist.playlist) {
       editPlaylist.playlist.playlistId = id;
-      console.log(id);
+    }
+    this.setState({
+      editPlaylist,
+    });
+  }
+
+  private onVideoChange(video: PlaylistVideo) {
+    const { editPlaylist } = this.state;
+    if (editPlaylist && editPlaylist.playlist) {
+      const videoIndex = editPlaylist.playlist.videos.findIndex(
+        (v) => v.id === video.id
+      );
+      if (videoIndex !== -1) {
+        editPlaylist.playlist.videos[videoIndex] = video;
+      }
     }
     this.setState({
       editPlaylist,
@@ -75,7 +88,6 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
       onReload,
       onPlay,
       onUpdateFolder,
-      onUpdateVideo,
     } = this.props;
     const { editPlaylist } = this.state;
     const editMode = !!editPlaylist;
@@ -116,7 +128,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
                 playlist={selectedPlaylist}
                 onVideoClick={(v) => onPlay(v)}
                 onPlaylistUpdate={(p) => onUpdateFolder(p)}
-                onVideoUpdate={(v) => onUpdateVideo(v)}
+                onVideoUpdate={(v) => this.onVideoChange(v)}
                 onPlaylistIdChange={(id) => this.onPlaylistIdChange(id)}
                 editPlaylist={editPlaylist}
               />

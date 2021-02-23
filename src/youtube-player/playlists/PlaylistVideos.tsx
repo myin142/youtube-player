@@ -1,10 +1,4 @@
-import {
-  Checkbox,
-  IconButton,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@material-ui/core';
+import { Checkbox, IconButton, Tooltip, Typography } from '@material-ui/core';
 import { GetApp } from '@material-ui/icons';
 import React from 'react';
 import { PlaylistFolderInfo, PlaylistVideo } from '../types';
@@ -98,14 +92,13 @@ export default class PlaylistVideos extends React.Component<
   }
 
   private toggleAllVideos() {
-    const { playlist, onPlaylistUpdate } = this.props;
+    const { playlist, onVideoUpdate } = this.props;
     const disabled = playlist.playlist.videos.every((v) => !v.disabled);
 
     playlist.playlist.videos.forEach((v) => {
       v.disabled = disabled;
+      onVideoUpdate(v);
     });
-
-    onPlaylistUpdate(playlist);
   }
 
   private onVideoClicked(video: PlaylistVideo) {

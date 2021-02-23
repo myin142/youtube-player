@@ -190,7 +190,6 @@ class YoutubePlayerPage extends React.Component<
                 onPlay={(v) => this.playFromCurrentPlaylist(v)}
                 onReload={(p) => this.loadPlaylistVideos(p)}
                 onUpdateFolder={(p) => this.updatePlaylistFolder(p)}
-                onUpdateVideo={(v) => this.updatePlaylistVideo(v)}
               />
             )}
           </div>
