@@ -1,7 +1,11 @@
 import React, { ChangeEvent } from 'react';
 import * as fs from 'fs-extra';
+import { Close } from '@material-ui/icons';
+import { Snackbar, IconButton } from '@material-ui/core';
 import { PlaylistFolderInfo } from '../types';
 import { PlaylistService } from '../../services/playlist.service';
+import InputField from '../../components/InputField';
+import FlexBox from '../../components/FlexBox';
 
 export interface PlaylistsProps {
   playlistFolder: string;
@@ -137,14 +141,36 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
         >
           Create Playlist Folder
         </button>
-        {createPlaylistError && <div>{createPlaylistError}</div>}
+
+        <Snackbar
+          open={!!createPlaylistError}
+          autoHideDuration={3000}
+          onClose={() => this.setState({ createPlaylistError: '' })}
+          message={createPlaylistError}
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={() => this.setState({ createPlaylistError: '' })}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          }
+        />
         {showCreatePlaylist && (
-          <div>
-            <input
+          <div className="flex-horizontal" style={{ gap: '0.5em' }}>
+            <InputField
+              style={{ background: '#3f3f3f' }}
               value={createPlaylistName}
-              onChange={this.setCreatePlaylistName.bind(this)}
+              onChange={(e) => this.setCreatePlaylistName(e)}
             />
-            <button type="button" onClick={() => this.createPlaylist()}>
+            <button
+              className="btn-2"
+              style={{ flexShrink: 1, width: 'unset' }}
+              type="button"
+              onClick={() => this.createPlaylist()}
+            >
               Create
             </button>
           </div>

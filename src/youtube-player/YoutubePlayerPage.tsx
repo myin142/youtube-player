@@ -205,19 +205,21 @@ class YoutubePlayerPage extends React.Component<
             </aside>
           )}
         </div>
-        <footer className="panel">
-          <MusicPlayer
-            videoChanged={videoChanged}
-            dirtyQueue={dirtyQueue}
-            playingVideos={this.playableVideos()}
-            playingVideo={playingVideo}
-            queue={queue}
-            onVideoPlay={(v) =>
-              this.setState({ playingVideo: v, videoChanged: !videoChanged })
-            }
-            onQueueChanged={(q) => this.setState({ queue: q })}
-          />
-        </footer>
+        {playingVideo && (
+          <footer className="panel">
+            <MusicPlayer
+              videoChanged={videoChanged}
+              dirtyQueue={dirtyQueue}
+              playingVideos={this.playableVideos()}
+              playingVideo={playingVideo}
+              queue={queue}
+              onVideoPlay={(v) =>
+                this.setState({ playingVideo: v, videoChanged: !videoChanged })
+              }
+              onQueueChanged={(q) => this.setState({ queue: q })}
+            />
+          </footer>
+        )}
       </>
     );
   }
