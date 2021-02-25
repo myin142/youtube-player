@@ -139,7 +139,7 @@ export class Playlists extends React.Component<PlaylistsProps, PlaylistsState> {
             }))
           }
         >
-          Create Playlist Folder
+          Create Folder
         </button>
 
         <Snackbar

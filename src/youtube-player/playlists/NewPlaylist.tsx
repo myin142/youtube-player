@@ -1,4 +1,6 @@
 import React, { ChangeEvent } from 'react';
+import FlexBox from '../../components/FlexBox';
+import InputField from '../../components/InputField';
 import { YoutubeService } from '../../services/youtube.service';
 import { PlaylistFolderInfo } from '../types';
 
@@ -38,23 +40,30 @@ export default class NewPlaylist extends React.Component<
     });
   }
 
-  private setPlaylistId({ target }: ChangeEvent<HTMLInputElement>) {
+  private setPlaylistId({
+    target,
+  }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     this.setState({ playlistId: target.value });
   }
 
   render() {
     const { playlistId, loading } = this.state;
     return (
-      <>
-        <input value={playlistId} onChange={this.setPlaylistId.bind(this)} />
+      <FlexBox flexDirection="row" style={{ alignItems: 'stretch' }}>
+        <InputField
+          value={playlistId}
+          onChange={(e) => this.setPlaylistId(e)}
+        />
         <button
+          className="btn-1"
+          style={{ padding: '.5em 1em', whiteSpace: 'nowrap', width: 'unset' }}
           type="button"
           onClick={() => this.onCreatePlaylist()}
           disabled={loading}
         >
           Create Playlist
         </button>
-      </>
+      </FlexBox>
     );
   }
 }

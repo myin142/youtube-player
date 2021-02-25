@@ -33,15 +33,13 @@ jobs:
         run: |
           #yarn test
           yarn package
-          #yarn lint
-          #yarn tsc
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         env:
           EXTENSION: "${{matrix.os == 'macos-latest' && 'dmg' || (matrix.os == 'windows-latest' && 'exe' || 'AppImage')}}"
         with:
-          name: build-${{ matrix.os }}
+          name: build
           path: release/YoutubePlayer*.${{env.EXTENSION}}
 
   release:
