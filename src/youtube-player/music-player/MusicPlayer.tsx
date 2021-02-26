@@ -57,6 +57,7 @@ export class MusicPlayer extends React.Component<
     this.clearListeners();
     document.addEventListener('keydown', this.handleKeyDown);
     this.play();
+    this.fillQueue([]);
   }
 
   componentDidUpdate(prevProps: MusicPlayerProps) {

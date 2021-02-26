@@ -51,7 +51,7 @@ export default function PlaylistQueue({
     .map((v, i) => {
       return (
         <>
-          <ListItem key={i}>
+          <ListItem key={i} style={{ borderBottom: '.2em solid #3f3f3f' }}>
             {i === 0 && (
               <ListItemIcon className={styles.iconItem}>
                 <VolumeUp className={styles.icon} />
@@ -59,21 +59,18 @@ export default function PlaylistQueue({
             )}
             <ListItemText>{videos[v].title}</ListItemText>
           </ListItem>
-          <Divider component="li" />
         </>
       );
     });
 
   return (
-    <div className="flex-vertical" style={{ gap: '1em' }}>
-      {queueItems.length > 0 && (
-        <div>
-          <Typography variant="h5" gutterBottom>
-            Queue
-          </Typography>
-          <List dense>{queueItems}</List>
-        </div>
-      )}
-    </div>
+    queueItems.length > 0 && (
+      <div>
+        <Typography variant="h5" gutterBottom>
+          Queue
+        </Typography>
+        <List dense>{queueItems}</List>
+      </div>
+    )
   );
 }
