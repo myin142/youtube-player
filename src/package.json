@@ -1,7 +1,7 @@
 {
   "name": "youtube-player",
   "productName": "youtube-player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Download and manage youtube playlists and videos",
   "main": "./main.prod.js",
   "scripts": {
